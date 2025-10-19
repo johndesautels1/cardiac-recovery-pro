@@ -2562,9 +2562,17 @@ ${session.homeExerciseInstructions || 'No at-home instructions provided'}
         function initializeCharts() {
             updateCharts();
             updatePopulationComparison();
-            // Initialize new Analytics subtab charts
-            createMETsChart();
-            createHRZoneChart();
+            // Initialize new Analytics subtab charts (with error handling to prevent breaking app)
+            try {
+                createMETsChart();
+            } catch (error) {
+                console.error('METs chart init error:', error);
+            }
+            try {
+                createHRZoneChart();
+            } catch (error) {
+                console.error('HR Zone chart init error:', error);
+            }
         }
 
         function updateCharts() {
