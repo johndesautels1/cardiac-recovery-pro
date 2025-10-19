@@ -1736,15 +1736,52 @@
         // WEEKLY MILESTONES FUNCTIONS
         function updateWeeklyMilestones() {
             try {
+                const dates = Object.keys(allData).sort();
+
+                // If no surgery date, show milestones without week numbers
                 if (!surgeryDateStr) {
-                    document.getElementById('milestonesTitle').textContent = '🎯 Weekly Milestones';
-                    document.getElementById('currentWeekTitle').textContent = 'Current Week Achievements';
-                    document.getElementById('nextWeekTitle').innerHTML = 'Next Week Goals <button onclick="toggleEditGoals()" style="margin-left: 10px; padding: 4px 12px; background: var(--accent); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">✏️ Edit</button>';
+                    document.getElementById('milestonesTitle').textContent = '🎯 Recent Achievements';
+                    document.getElementById('currentWeekTitle').textContent = 'Your Progress';
+                    document.getElementById('nextWeekTitle').innerHTML = 'Goals <button onclick="toggleEditGoals()" style="margin-left: 10px; padding: 4px 12px; background: var(--accent); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">✏️ Edit</button>';
+
+                    // Still show milestones if we have data
+                    if (dates.length > 0) {
+                        const topMilestones = calculateTopMilestones(null);
+                        const milestonesContainer = document.getElementById('topMilestones');
+
+                        if (topMilestones.length === 0) {
+                            milestonesContainer.innerHTML = '<div style="color: var(--muted); font-size: 0.9rem;">Enter data on multiple days to track improvements...</div>';
+                        } else {
+                            let milestonesHTML = '';
+                            topMilestones.slice(0, 3).forEach((milestone, idx) => {
+                                const medalIcon = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉';
+                                milestonesHTML += `
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px; background: rgba(255,255,255,0.5); border-radius: 4px;">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span style="font-size: 1.2rem;">${medalIcon}</span>
+                                            <span style="font-weight: 600; color: var(--text);">${milestone.name}</span>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <div style="font-weight: 700; color: var(--accent); font-size: 1.1rem;">${milestone.improvement}</div>
+                                            <div style="font-size: 0.75rem; color: var(--muted);">${milestone.comparison}</div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            milestonesContainer.innerHTML = milestonesHTML;
+                        }
+                    } else {
+                        document.getElementById('topMilestones').innerHTML = '<div style="color: var(--muted); font-size: 0.9rem;">No data entered yet. Start tracking your metrics!</div>';
+                    }
+
+                    loadCustomGoals();
                     return;
                 }
 
-                const dates = Object.keys(allData).sort();
-                if (dates.length === 0) return;
+                if (dates.length === 0) {
+                    document.getElementById('topMilestones').innerHTML = '<div style="color: var(--muted); font-size: 0.9rem;">No data entered yet. Start tracking your metrics!</div>';
+                    return;
+                }
 
                 // Calculate current week number
                 const currentWeekNum = Math.floor((new Date() - new Date(surgeryDateStr)) / (7 * 24 * 60 * 60 * 1000));
@@ -1760,7 +1797,7 @@
                 // Display top 3 milestones
                 const milestonesContainer = document.getElementById('topMilestones');
                 if (topMilestones.length === 0) {
-                    milestonesContainer.innerHTML = '<div style="color: var(--muted); font-size: 0.9rem;">Enter more data to track week-over-week improvements...</div>';
+                    milestonesContainer.innerHTML = '<div style="color: var(--muted); font-size: 0.9rem;">Enter data on multiple days to track week-over-week improvements...</div>';
                 } else {
                     let milestonesHTML = '';
                     topMilestones.slice(0, 3).forEach((milestone, idx) => {
@@ -1786,6 +1823,11 @@
 
             } catch (error) {
                 console.error('Weekly milestones update error:', error);
+                // Show error message to user
+                const milestonesContainer = document.getElementById('topMilestones');
+                if (milestonesContainer) {
+                    milestonesContainer.innerHTML = '<div style="color: var(--bad); font-size: 0.9rem;">⚠️ Error loading milestones. Check console.</div>';
+                }
             }
         }
 
@@ -1793,16 +1835,34 @@
             const dates = Object.keys(allData).sort();
             if (dates.length < 2) return [];
 
-            // Get current week data and previous week data
-            const currentWeekDates = dates.filter(date => {
-                const weekNum = Math.floor((new Date(date) - new Date(surgeryDateStr)) / (7 * 24 * 60 * 60 * 1000));
-                return weekNum === currentWeekNum;
-            });
+            let currentWeekDates, previousWeekDates;
 
-            const previousWeekDates = dates.filter(date => {
-                const weekNum = Math.floor((new Date(date) - new Date(surgeryDateStr)) / (7 * 24 * 60 * 60 * 1000));
-                return weekNum === currentWeekNum - 1;
-            });
+            // If no surgery date (currentWeekNum is null), compare most recent data vs previous data
+            if (currentWeekNum === null || !surgeryDateStr) {
+                // Get the most recent 7 days
+                const recentDate = new Date(dates[dates.length - 1]);
+                const sevenDaysAgo = new Date(recentDate);
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                const fourteenDaysAgo = new Date(recentDate);
+                fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+
+                currentWeekDates = dates.filter(date => new Date(date) >= sevenDaysAgo);
+                previousWeekDates = dates.filter(date => {
+                    const d = new Date(date);
+                    return d >= fourteenDaysAgo && d < sevenDaysAgo;
+                });
+            } else {
+                // Get current week data and previous week data based on surgery date
+                currentWeekDates = dates.filter(date => {
+                    const weekNum = Math.floor((new Date(date) - new Date(surgeryDateStr)) / (7 * 24 * 60 * 60 * 1000));
+                    return weekNum === currentWeekNum;
+                });
+
+                previousWeekDates = dates.filter(date => {
+                    const weekNum = Math.floor((new Date(date) - new Date(surgeryDateStr)) / (7 * 24 * 60 * 60 * 1000));
+                    return weekNum === currentWeekNum - 1;
+                });
+            }
 
             if (currentWeekDates.length === 0 || previousWeekDates.length === 0) return [];
 
