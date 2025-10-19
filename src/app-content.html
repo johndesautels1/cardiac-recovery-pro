@@ -1009,6 +1009,24 @@
 
         <!-- ANALYTICS TAB -->
         <div class="tab-content" id="analytics" role="tabpanel" aria-labelledby="tab-analytics">
+
+            <!-- ANALYTICS SUBTABS -->
+            <div class="subtabs-container" style="margin-bottom: 30px; background: var(--card); border-radius: 12px; padding: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div class="subtabs" style="display: flex; gap: 10px; overflow-x: auto;">
+                    <button class="subtab-button active" onclick="switchAnalyticsSubtab('performance')" id="subtab-performance">
+                        💪 Performance
+                    </button>
+                    <button class="subtab-button" onclick="switchAnalyticsSubtab('cardiovascular')" id="subtab-cardiovascular">
+                        ❤️ Cardiovascular
+                    </button>
+                    <button class="subtab-button" onclick="switchAnalyticsSubtab('multiMetric')" id="subtab-multiMetric">
+                        🕸️ Multi-Metric
+                    </button>
+                </div>
+            </div>
+
+            <!-- PERFORMANCE SUBTAB -->
+            <div class="analytics-subtab active" id="analytics-performance">
             <div class="section">
                 <h2>📊 Population Comparison</h2>
                 <div class="comparison-grid" id="populationComparison">
@@ -1045,6 +1063,28 @@
                 </div>
             </div>
 
+            <!-- METS PROGRESS BAR CHART - Can be moved anywhere -->
+            <div class="section">
+                <h2>💪 METs Progress - Exercise Capacity</h2>
+                <div style="margin-bottom: 20px; padding: 15px; background: rgba(96,165,250,0.05); border-left: 4px solid var(--cyan); border-radius: 8px;">
+                    <p style="color: var(--muted); line-height: 1.6; font-size: 0.95rem;">
+                        <strong style="color: var(--cyan);">METs (Metabolic Equivalents)</strong> measure how hard your body is working during exercise.
+                        1 MET = resting. Walking = 3-4 METs. Vigorous exercise = 6+ METs.
+                        <strong>Higher METs = Better cardiovascular fitness!</strong>
+                    </p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="metsProgressChart"></canvas>
+                </div>
+                <div style="margin-top: 15px; padding: 15px; background: rgba(96,165,250,0.05); border-radius: 8px; font-size: 0.85rem; color: var(--muted); text-align: center;">
+                    <strong style="color: var(--accent);">Target Goals:</strong>
+                    Week 1-4: 2-4 METs | Week 5-8: 4-6 METs | Week 9-12: 6+ METs
+                </div>
+            </div>
+            </div> <!-- END PERFORMANCE SUBTAB -->
+
+            <!-- CARDIOVASCULAR SUBTAB -->
+            <div class="analytics-subtab" id="analytics-cardiovascular" style="display: none;">
             <!-- CRPS RECOVERY PROBABILITY SCORE - ANALYTICS VIEW -->
             <div class="section">
                 <h2>🎯 Recovery Probability Score (CRPS)</h2>
@@ -1153,7 +1193,10 @@
                     </p>
                 </div>
             </div>
+            </div> <!-- END CARDIOVASCULAR SUBTAB -->
 
+            <!-- MULTI-METRIC SUBTAB -->
+            <div class="analytics-subtab" id="analytics-multiMetric" style="display: none;">
             <div class="section">
                 <h2>🕸️ Multi-Metric Analysis</h2>
                 <div class="chart-container">
@@ -1273,6 +1316,8 @@
                     <canvas id="recoveryProgressChart"></canvas>
                 </div>
             </div>
+            </div> <!-- END MULTI-METRIC SUBTAB -->
+
         </div>
 
         <!-- VIDEOS TAB -->

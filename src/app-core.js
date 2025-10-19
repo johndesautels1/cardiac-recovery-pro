@@ -4049,6 +4049,112 @@ ${session.homeExerciseInstructions || 'No at-home instructions provided'}
             }
         }
 
+        // ANALYTICS SUBTAB SWITCHING
+        function switchAnalyticsSubtab(subtabId) {
+            // Hide all analytics subtabs
+            document.querySelectorAll('.analytics-subtab').forEach(subtab => {
+                subtab.style.display = 'none';
+                subtab.classList.remove('active');
+            });
+
+            // Show selected subtab
+            const activeSubtab = document.getElementById('analytics-' + subtabId);
+            if (activeSubtab) {
+                activeSubtab.style.display = 'block';
+                activeSubtab.classList.add('active');
+            }
+
+            // Update subtab button states
+            document.querySelectorAll('.subtab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            const activeBtn = document.getElementById('subtab-' + subtabId);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
+
+            // Trigger chart updates for visible subtab
+            setTimeout(() => {
+                if (subtabId === 'performance') {
+                    createMETsChart();
+                }
+            }, 100);
+        }
+
+        // CREATE METS PROGRESS CHART
+        function createMETsChart() {
+            const canvas = document.getElementById('metsProgressChart');
+            if (!canvas) return;
+
+            // Destroy existing chart if it exists
+            if (window.metsChart) {
+                window.metsChart.destroy();
+            }
+
+            // Calculate METs from saved data
+            const dates = Object.keys(allData).sort();
+            const metsData = [];
+
+            dates.forEach(date => {
+                const data = allData[date];
+                // Calculate METs from exercise data or use saved value
+                if (data.mets) {
+                    metsData.push({
+                        date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                        mets: parseFloat(data.mets)
+                    });
+                } else if (data.vo2Max) {
+                    // Estimate METs from VO2 Max: METs = VO2 Max / 3.5
+                    const estimatedMETs = (parseFloat(data.vo2Max) / 3.5).toFixed(1);
+                    metsData.push({
+                        date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                        mets: parseFloat(estimatedMETs)
+                    });
+                }
+            });
+
+            // If no data, show sample data
+            if (metsData.length === 0) {
+                metsData.push(
+                    { date: 'Week 1', mets: 2.5 },
+                    { date: 'Week 2', mets: 3.0 },
+                    { date: 'Week 3', mets: 3.5 },
+                    { date: 'Week 4', mets: 4.0 },
+                    { date: 'Sample', mets: null }
+                );
+            }
+
+            const ctx = canvas.getContext('2d');
+            window.metsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: metsData.map(d => d.date),
+                    datasets: [{
+                        label: 'METs (Metabolic Equivalents)',
+                        data: metsData.map(d => d.mets),
+                        backgroundColor: function(context) {
+                            const value = context.parsed.y;
+                            if (value >= 6) return 'rgba(34, 197, 94, 0.8)'; // Green - Vigorous
+                            if (value >= 4) return 'rgba(59, 130, 246, 0.8)'; // Blue - Moderate
+                            if (value >= 2) return 'rgba(245, 158, 11, 0.8)'; // Orange - Light
+                            return 'rgba(156, 163, 175, 0.8)'; // Gray - Resting
+                        },
+                        borderColor: function(context) {
+                            const value = context.parsed.y;
+                            if (value >= 6) return 'rgb(34, 197, 94)';
+                            if (value >= 4) return 'rgb(59, 130, 246)';
+                            if (value >= 2) return 'rgb(245, 158, 11)';
+                            return 'rgb(156, 163, 175)';
+                        },
+                        borderWidth: 2,
+                        borderRadius: 6
+                    }]
+                },
+                options: getChartOptions('METs')
+            });
+        }
+
         // NOTIFICATIONS
         function showNotification(message, type) {
             const notif = document.getElementById('notification');
@@ -5184,6 +5290,7 @@ ${session.homeExerciseInstructions || 'No at-home instructions provided'}
 // ========================================================================
 // Make all onclick handler functions globally available
 window.switchTab = switchTab;
+window.switchAnalyticsSubtab = switchAnalyticsSubtab;
 window.navigateDate = navigateDate;
 window.saveMetrics = saveMetrics;
 window.saveTherapySession = saveTherapySession;

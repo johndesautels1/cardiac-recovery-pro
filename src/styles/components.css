@@ -1686,3 +1686,37 @@
                 transform: translateX(-50%) rotate(360deg);
             }
         }
+
+/* ANALYTICS SUBTABS */
+.subtab-button {
+    padding: 12px 24px;
+    background: rgba(96, 165, 250, 0.1);
+    color: var(--accent);
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.subtab-button:hover {
+    background: rgba(96, 165, 250, 0.2);
+    border-color: var(--accent);
+}
+
+.subtab-button.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+}
+
+.analytics-subtab {
+    display: none;
+}
+
+.analytics-subtab.active {
+    display: block;
+}
