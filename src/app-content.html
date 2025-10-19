@@ -1,0 +1,2050 @@
+        <header class="header" role="banner">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 20px;">
+                <!-- USER PHOTO -->
+                <div style="flex: 1; display: flex; justify-content: flex-start;">
+                    <div
+                        id="userPhoto"
+                        onclick="uploadUserPhoto()"
+                        oncontextmenu="removeUserPhoto(); return false;"
+                        title="Click to upload photo, right-click to remove"
+                        style="
+                            width: 80px;
+                            height: 80px;
+                            border-radius: 50%;
+                            background: linear-gradient(135deg, var(--accent), var(--purple));
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 2.5rem;
+                            cursor: pointer;
+                            border: 4px solid var(--cyan);
+                            box-shadow: 0 4px 12px rgba(96,165,250,0.4);
+                            transition: all 0.3s ease;
+                        "
+                        onmouseover="this.style.transform='scale(1.05)'"
+                        onmouseout="this.style.transform='scale(1)'"
+                    >👤</div>
+                </div>
+
+                <h1 style="flex: 2; text-align: center; margin: 0;">💓 CARDIAC RECOVERY PRO</h1>
+
+                <div style="flex: 1; text-align: right;">
+                    <div id="welcomeMessage" style="font-size: 1.1rem; font-weight: 600; color: var(--accent); opacity: 0.9;"></div>
+                </div>
+            </div>
+            <p class="subtitle">Complete Recovery Tracking & Analytics System</p>
+            <p style="text-align: center; font-size: 0.75rem; color: var(--muted); margin-top: 8px; font-weight: 400; letter-spacing: 0.5px;">
+                Powered by our exclusive <span style="color: var(--accent); font-weight: 600;">PULSE</span> Technology<br>
+                <span style="font-size: 0.7rem; opacity: 0.8;">Personal Universal Life Support Engine</span>
+            </p>
+        </header>
+
+        <!-- CALENDAR NAVIGATION -->
+        <nav aria-label="Date navigation" class="calendar-nav">
+            <div class="calendar-controls">
+                <div class="nav-buttons">
+                    <button class="nav-btn" onclick="navigateDate(-7)" aria-label="Go back one week" title="Go back one week">⏪ -1 Week</button>
+                    <button class="nav-btn" onclick="navigateDate(-1)" aria-label="Go back one day" title="Go back one day">◀ -1 Day</button>
+                </div>
+                <div>
+                    <div class="date-display" id="currentDate" role="status" aria-live="polite" aria-atomic="true"></div>
+                    <label for="datePicker" class="sr-only">Select date for data entry</label>
+                    <input type="date" id="datePicker" aria-label="Select date" style="margin-top: 10px; padding: 10px; border-radius: 8px; border: 2px solid var(--accent);">
+                </div>
+                <div class="nav-buttons">
+                    <button class="nav-btn" onclick="navigateDate(1)" aria-label="Go forward one day" title="Go forward one day">+1 Day ▶</button>
+                    <button class="nav-btn" onclick="navigateDate(7)" aria-label="Go forward one week" title="Go forward one week">+1 Week ⏩</button>
+                </div>
+            </div>
+            <div class="recovery-info" id="recoveryInfo">
+                <strong>Recovery Day:</strong> <span id="recoveryDay">Not Set</span> |
+                <strong>Weeks Post-Op:</strong> <span id="weeksPostOp">0</span> |
+                <strong>Phase:</strong> <span id="recoveryPhase">Not Started</span>
+            </div>
+        </div>
+
+        <!-- BASELINE SETUP -->
+        <section class="baseline-section" aria-labelledby="baseline-heading">
+            <h2 id="baseline-heading">🎯 Patient Information & Recovery Day 1</h2>
+
+            <!-- Patient Name and Surgery Date Row -->
+            <div style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 20px;">
+                <div style="flex: 1; min-width: 200px;">
+                    <label for="patientName" style="color: var(--cyan); font-weight: 700; margin-bottom: 8px; display: block;">Patient Name:</label>
+                    <input type="text" id="patientName" placeholder="Enter patient name" aria-label="Patient name" onchange="savePatientName()" style="padding: 14px; border-radius: 8px; border: 3px solid var(--cyan); font-size: 1.1rem; font-weight: 600; background: white; color: #1a1a1a; width: 100%;">
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <label for="surgeryDate" style="color: var(--purple); font-weight: 700; margin-bottom: 8px; display: block;">Surgery Date:</label>
+                    <input type="date" id="surgeryDate" aria-label="Surgery date" aria-describedby="baseline-heading" style="padding: 14px; border-radius: 8px; border: 3px solid var(--purple); font-size: 1.1rem; font-weight: 600; background: white; color: #1a1a1a; width: 100%;">
+                </div>
+                <button class="btn-good" onclick="setRecoveryDay1()" aria-label="Set surgery date as recovery day 1">✓ Set as Day 1</button>
+            </div>
+
+            <!-- Patient Demographics for CRPS Calculation -->
+            <div style="background: rgba(96,165,250,0.05); border: 2px solid rgba(96,165,250,0.2); border-radius: 12px; padding: 20px; margin-top: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <h3 style="color: var(--accent); font-size: 1.1rem; margin: 0;">📊 Demographics for Recovery Score</h3>
+                    <span id="demographicsSource" style="font-size: 0.75rem; color: var(--muted); padding: 4px 8px; background: rgba(0,0,0,0.2); border-radius: 4px; display: none;">
+                        🔗 Auto-filled from Heartbeat App
+                    </span>
+                </div>
+                <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 15px;">
+                    Used for age-adjusted CRPS (Cardiac Recovery Probability Score) calculations
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
+                    <!-- Age -->
+                    <div>
+                        <label for="patientAge" style="color: var(--accent); font-weight: 600; margin-bottom: 6px; display: block; font-size: 0.9rem;">Age (years)</label>
+                        <input type="number" id="patientAge" placeholder="e.g., 50" min="18" max="120" onchange="savePatientDemographics()" style="padding: 12px; border-radius: 8px; border: 2px solid var(--accent); font-size: 1rem; font-weight: 600; background: white; color: #1a1a1a; width: 100%;">
+                        <div style="font-size: 0.75rem; color: var(--muted); margin-top: 4px;">For age-adjusted METs calculation</div>
+                    </div>
+
+                    <!-- Sex -->
+                    <div>
+                        <label for="patientSex" style="color: var(--accent); font-weight: 600; margin-bottom: 6px; display: block; font-size: 0.9rem;">Sex</label>
+                        <select id="patientSex" onchange="savePatientDemographics()" style="padding: 12px; border-radius: 8px; border: 2px solid var(--accent); font-size: 1rem; font-weight: 600; background: white; color: #1a1a1a; width: 100%; cursor: pointer;">
+                            <option value="">Select...</option>
+                            <option value="female">Female</option>
+                            <option value="male">Male</option>
+                        </select>
+                        <div style="font-size: 0.75rem; color: var(--muted); margin-top: 4px;">For 6MWT prediction equation</div>
+                    </div>
+
+                    <!-- Height -->
+                    <div>
+                        <label for="patientHeight" style="color: var(--accent); font-weight: 600; margin-bottom: 6px; display: block; font-size: 0.9rem;">Height (cm)</label>
+                        <input type="number" id="patientHeight" placeholder="e.g., 170" min="100" max="250" onchange="savePatientDemographics()" style="padding: 12px; border-radius: 8px; border: 2px solid var(--accent); font-size: 1rem; font-weight: 600; background: white; color: #1a1a1a; width: 100%;">
+                        <div style="font-size: 0.75rem; color: var(--muted); margin-top: 4px;">For 6MWT prediction equation</div>
+                    </div>
+
+                    <!-- Default Weight -->
+                    <div>
+                        <label for="patientWeight" style="color: var(--accent); font-weight: 600; margin-bottom: 6px; display: block; font-size: 0.9rem;">Weight (kg)</label>
+                        <input type="number" id="patientWeight" placeholder="e.g., 70" min="30" max="300" step="0.1" onchange="savePatientDemographics()" style="padding: 12px; border-radius: 8px; border: 2px solid var(--accent); font-size: 1rem; font-weight: 600; background: white; color: #1a1a1a; width: 100%;">
+                        <div style="font-size: 0.75rem; color: var(--muted); margin-top: 4px;">For 6MWT prediction (if not entered daily)</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px; padding: 12px; background: rgba(6,182,212,0.1); border-radius: 6px; font-size: 0.85rem; color: var(--cyan); line-height: 1.5;">
+                    <strong>💡 Note:</strong> These values improve CRPS accuracy. If connected to the main Heartbeat app, they'll auto-fill from your profile.
+                </div>
+            </div>
+        </section>
+
+        <!-- TABS -->
+        <nav class="tabs" role="tablist" aria-label="Main navigation">
+            <button class="tab-button active" onclick="switchTab('dashboard')" role="tab" aria-selected="true" aria-controls="dashboard" id="tab-dashboard">Dashboard</button>
+            <button class="tab-button" onclick="switchTab('entry')" role="tab" aria-selected="false" aria-controls="entry" id="tab-entry">Data Entry</button>
+            <button class="tab-button" onclick="switchTab('sessions')" role="tab" aria-selected="false" aria-controls="sessions" id="tab-sessions">Sessions</button>
+            <button class="tab-button" onclick="switchTab('analytics')" role="tab" aria-selected="false" aria-controls="analytics" id="tab-analytics">Analytics</button>
+            <button class="tab-button" onclick="switchTab('videos')" role="tab" aria-selected="false" aria-controls="videos" id="tab-videos">Videos</button>
+            <button class="tab-button" onclick="switchTab('history')" role="tab" aria-selected="false" aria-controls="history" id="tab-history">History</button>
+            <button class="tab-button" onclick="switchTab('hrmonitor')" role="tab" aria-selected="false" aria-controls="hrmonitor" id="tab-hrmonitor">Heart Rate Monitor</button>
+            <button class="tab-button" onclick="switchTab('education')" role="tab" aria-selected="false" aria-controls="education" id="tab-education">Learn More</button>
+        </nav>
+
+        <!-- MAIN CONTENT -->
+        <main id="main-content">
+        <!-- DASHBOARD TAB -->
+        <div class="tab-content active" id="dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
+
+            <!-- WEEKLY MILESTONES SECTION -->
+            <div class="section">
+                <h2 id="milestonesTitle">🎯 Weekly Milestones</h2>
+                <div class="comparison-grid">
+                    <div class="comparison-card">
+                        <div class="comparison-title" id="currentWeekTitle">Current Week Achievements</div>
+                        <div style="margin-bottom: 15px; padding: 10px; background: rgba(96, 165, 250, 0.1); border-radius: 6px;">
+                            <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; font-weight: 600;">🏆 Top 3 Milestones This Week</div>
+                            <div id="topMilestones" style="display: flex; flex-direction: column; gap: 10px;">
+                                <div style="color: var(--muted); font-size: 0.9rem;">Enter data to see your progress...</div>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--muted); font-style: italic; margin-top: 10px;">
+                            * Improvements shown vs. previous week average
+                        </div>
+                    </div>
+                    <div class="comparison-card">
+                        <div class="comparison-title" id="nextWeekTitle">
+                            Next Week Goals
+                            <button onclick="toggleEditGoals()" style="margin-left: 10px; padding: 4px 12px; background: var(--accent); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">✏️ Edit</button>
+                        </div>
+                        <div id="goalsDisplay" style="display: block;">
+                            <div class="metric-row" id="goal1Row">
+                                <span class="metric-name" id="goal1Name" style="color: #fbbf24; font-weight: 700;">VO2 Max:</span>
+                                <span class="metric-value" id="goal1Value" style="color: #fbbf24; font-weight: 700;">Improve 5%</span>
+                            </div>
+                            <div class="metric-row" id="goal2Row">
+                                <span class="metric-name" id="goal2Name" style="color: #fbbf24; font-weight: 700;">Resting HR:</span>
+                                <span class="metric-value" id="goal2Value" style="color: #fbbf24; font-weight: 700;">Reduce 2-3 bpm</span>
+                            </div>
+                            <div class="metric-row" id="goal3Row">
+                                <span class="metric-name" id="goal3Name" style="color: #fbbf24; font-weight: 700;">6MWD:</span>
+                                <span class="metric-value" id="goal3Value" style="color: #fbbf24; font-weight: 700;">Increase 20m</span>
+                            </div>
+                        </div>
+                        <div id="goalsEdit" style="display: none;">
+                            <div style="margin-bottom: 10px;">
+                                <input type="text" id="editGoal1Name" placeholder="Goal 1 metric" style="width: 48%; margin-right: 2%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg);">
+                                <input type="text" id="editGoal1Value" placeholder="Target" style="width: 48%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg);">
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                <input type="text" id="editGoal2Name" placeholder="Goal 2 metric" style="width: 48%; margin-right: 2%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg);">
+                                <input type="text" id="editGoal2Value" placeholder="Target" style="width: 48%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg);">
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                <input type="text" id="editGoal3Name" placeholder="Goal 3 metric" style="width: 48%; margin-right: 2%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg);">
+                                <input type="text" id="editGoal3Value" placeholder="Target" style="width: 48%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg);">
+                            </div>
+                            <button onclick="saveCustomGoals()" style="padding: 8px 16px; background: var(--accent); color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">💾 Save Goals</button>
+                            <button onclick="cancelEditGoals()" style="padding: 8px 16px; background: var(--muted); color: white; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CARDIOVASCULAR HEALTH METRICS HEADING -->
+            <div style="margin: 30px 0 20px 0; text-align: center;">
+                <h2 style="
+                    font-size: 2rem;
+                    font-weight: 900;
+                    color: var(--cyan);
+                    text-transform: uppercase;
+                    letter-spacing: 2px;
+                    padding: 15px;
+                    background: linear-gradient(135deg, rgba(6,182,212,0.1), rgba(96,165,250,0.1));
+                    border-radius: 12px;
+                    border: 3px solid var(--cyan);
+                    box-shadow: 0 4px 12px rgba(6,182,212,0.3);
+                ">
+                    💓 Cardiovascular Health Metrics
+                </h2>
+            </div>
+
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-label">Weeks Post-Op</div>
+                    <div class="stat-value" id="statsWeeks">0</div>
+                    <div class="stat-trend up">↑ On Track</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">VO2 Max (ml/kg/min)</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="statsVO2" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="statsVO2Avg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="statsVO2Trend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="statsVO2Date">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Resting HR (bpm)</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="statsHR" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="statsHRAvg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="statsHRTrend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="statsHRDate">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">SDNN (ms)</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="statsSDNN" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="statsSDNNAvg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="statsSDNNTrend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="statsSDNNDate">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Blood Pressure (mmHg)</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="statsBP" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="statsBPAvg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="statsBPTrend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="statsBPDate">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Max HR (bpm)</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="statsMaxHR" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="statsMaxHRAvg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="statsMaxHRTrend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="statsMaxHRDate">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">HR Recovery (bpm drop)</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="statsHRRecovery" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="statsHRRecoveryAvg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="statsHRRecoveryTrend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="statsHRRecoveryDate">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">RMSSD (ms)</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="statsRMSSD" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="statsRMSSDAvg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="statsRMSSDTrend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="statsRMSSDDate">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">pNN50 (%)</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="statsPNN50" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="statsPNN50Avg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="statsPNN50Trend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="statsPNN50Date">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">6-Min Walk (m)</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="stats6MWD" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="stats6MWDAvg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="stats6MWDTrend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="stats6MWDDate">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">METs</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="statsMETs" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="statsMETsAvg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="statsMETsTrend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="statsMETsDate">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Ejection Fraction (%)</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="statsEF" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="statsEFAvg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="statsEFTrend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="statsEFDate">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Oxygen Saturation (%)</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="statsSpO2" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="statsSpO2Avg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="statsSpO2Trend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="statsSpO2Date">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Respiratory Rate (/min)</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="statsRespRate" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="statsRespRateAvg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="statsRespRateTrend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="statsRespRateDate">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Weight (kg)</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="statsWeight" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="statsWeightAvg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="statsWeightTrend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="statsWeightDate">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Dyspnea Score (0-10)</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="statsDyspnea" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="statsDyspneaAvg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="statsDyspneaTrend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="statsDyspneaDate">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Chest Pain (0-10)</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="statsChestPain" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="statsChestPainAvg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="statsChestPainTrend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="statsChestPainDate">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Fatigue Score (0-10)</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="statsFatigue" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="statsFatigueAvg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="statsFatigueTrend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="statsFatigueDate">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Edema Score (0-4)</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="statsEdema" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="statsEdemaAvg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="statsEdemaTrend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="statsEdemaDate">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Quality of Life (0-100)</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="statsQOL" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="statsQOLAvg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="statsQOLTrend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="statsQOLDate">--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Sleep Quality (0-10)</div>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin: 10px 0;">
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Current:</span>
+                            <span class="stat-value" id="statsSleep" style="color: var(--accent); font-weight: 700;">--</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span style="font-size: 0.85rem; color: var(--purple); font-weight: 600;">Average:</span>
+                            <span class="stat-value-avg" id="statsSleepAvg" style="color: var(--purple); font-weight: 600; font-size: 1.3rem;">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-trend up" id="statsSleepTrend">No data yet</div>
+                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 5px;" id="statsSleepDate">--</div>
+                </div>
+            </div>
+
+            <!-- CRPS RECOVERY PROBABILITY SCORE DISPLAY -->
+            <div class="section" style="margin-top: 30px;">
+                <div id="dashboardCRPSCard" style="background: linear-gradient(135deg, rgba(96,165,250,0.1), rgba(96,165,250,0.05)); border: 3px solid var(--accent); border-radius: 20px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                    <div style="font-size: 0.9rem; font-weight: 600; color: var(--muted); letter-spacing: 1px; margin-bottom: 10px;">
+                        📊 RECOVERY PROBABILITY SCORE
+                    </div>
+
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin: 20px 0;">
+                        <div>
+                            <div style="font-size: 5rem; font-weight: 900; line-height: 1;" id="dashboardCRPSScore">--</div>
+                            <div style="font-size: 1rem; color: var(--muted); margin-top: 5px;">out of 100</div>
+                        </div>
+
+                        <div style="text-align: left; max-width: 400px;">
+                            <div style="font-size: 1.5rem; font-weight: 700; margin-bottom: 8px;" id="dashboardCRPSInterpretation">
+                                No data yet
+                            </div>
+                            <div style="font-size: 0.95rem; color: var(--muted); line-height: 1.5;" id="dashboardCRPSProbability">
+                                Enter metrics to calculate your recovery probability score
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(0,0,0,0.2); border-radius: 12px;">
+                        <div style="font-size: 0.85rem; font-weight: 600; color: var(--accent); margin-bottom: 15px;">
+                            SCORE BREAKDOWN BY CATEGORY
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 12px; text-align: left;">
+                            <!-- Functional Capacity -->
+                            <div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.85rem;">
+                                    <span style="font-weight: 600;">Functional Capacity</span>
+                                    <span id="crpsfunctionalCapacityScore" style="color: var(--accent); font-weight: 700;">--/35</span>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden;">
+                                    <div id="crpsfunctionalCapacityBar" style="height: 100%; width: 0%; background: var(--accent); transition: width 0.5s ease;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Cardiovascular Health -->
+                            <div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.85rem;">
+                                    <span style="font-weight: 600;">Cardiovascular Health</span>
+                                    <span id="crpscardiovascularHealthScore" style="color: var(--accent); font-weight: 700;">--/25</span>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden;">
+                                    <div id="crpscardiovascularHealthBar" style="height: 100%; width: 0%; background: var(--accent); transition: width 0.5s ease;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Symptom Burden -->
+                            <div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.85rem;">
+                                    <span style="font-weight: 600;">Symptom Burden</span>
+                                    <span id="crpssymptomBurdenScore" style="color: var(--accent); font-weight: 700;">--/20</span>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden;">
+                                    <div id="crpssymptomBurdenBar" style="height: 100%; width: 0%; background: var(--accent); transition: width 0.5s ease;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Quality of Life -->
+                            <div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.85rem;">
+                                    <span style="font-weight: 600;">Quality of Life</span>
+                                    <span id="crpsqualityOfLifeScore" style="color: var(--accent); font-weight: 700;">--/15</span>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden;">
+                                    <div id="crpsqualityOfLifeBar" style="height: 100%; width: 0%; background: var(--accent); transition: width 0.5s ease;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Risk Modifiers -->
+                            <div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.85rem;">
+                                    <span style="font-weight: 600;">Risk Modifiers</span>
+                                    <span id="crpsriskModifiersScore" style="color: var(--accent); font-weight: 700;">--/5</span>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden;">
+                                    <div id="crpsriskModifiersBar" style="height: 100%; width: 0%; background: var(--accent); transition: width 0.5s ease;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 20px; padding: 15px; background: rgba(96,165,250,0.1); border-radius: 8px; font-size: 0.75rem; color: var(--muted); text-align: center; line-height: 1.6;">
+                            <strong style="color: var(--accent);">📚 Evidence-Based Scoring</strong><br>
+                            Based on: STS Database (8.3M+ surgeries), 6MWT post-cardiac norms, METs age-adjusted equations, HRV cardiac surgery research, AHA/ACC 2024 Guidelines
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DATA MANAGEMENT BUTTONS -->
+            <div class="section" style="text-align: center;">
+                <h2 style="color: var(--warn); margin-bottom: 20px;">⚠️ Data Management</h2>
+                <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                    <button
+                        onclick="clearCurrentData()"
+                        class="btn"
+                        style="background: linear-gradient(135deg, var(--warn), #d97706); min-width: 200px; font-size: 1.1rem;"
+                    >
+                        🗑️ Clear Current Date Data
+                    </button>
+                    <button
+                        onclick="clearAllPatientData()"
+                        class="btn-danger"
+                        style="min-width: 200px; font-size: 1.1rem;"
+                    >
+                        ⚠️ Clear ALL Historic Data
+                    </button>
+                </div>
+                <div style="margin-top: 15px; font-size: 0.85rem; color: var(--muted); font-style: italic;">
+                    <strong>Note:</strong> "Clear Current Date" removes only today's data. "Clear ALL" permanently deletes everything.
+                </div>
+            </div>
+        </div>
+
+        <!-- DATA ENTRY TAB (21 metrics - keeping from full version) -->
+        <div class="tab-content" id="entry" role="tabpanel" aria-labelledby="tab-entry">
+            <div class="section">
+                <h2>📝 Enter Metrics for <span id="entryDate"></span></h2>
+
+                <!-- SAVE / CLEAR BUTTONS AT TOP -->
+                <div style="display: flex; gap: 15px; margin: 20px 0; padding: 15px; background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(96,165,250,0.1)); border-radius: 12px; border: 2px solid var(--accent);">
+                    <button class="btn-good" onclick="saveMetrics()" style="flex: 1; font-size: 1.1rem; padding: 16px;">💾 SAVE ALL METRICS</button>
+                    <button class="btn-danger" onclick="clearForm()" style="flex: 1; font-size: 1.1rem; padding: 16px;">🗑️ CLEAR FORM</button>
+                </div>
+
+                <!-- HISTORICAL DATA ENTRY MODE -->
+                <div style="margin: 20px 0; padding: 25px; background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(167,139,250,0.05)); border: 3px solid var(--purple); border-radius: 12px; box-shadow: 0 4px 12px rgba(167,139,250,0.2);">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; font-size: 1.2rem; font-weight: 800; color: var(--purple);">
+                            <input type="checkbox" id="historicalModeToggle" onchange="toggleHistoricalMode()" style="width: 24px; height: 24px; cursor: pointer; transform: scale(1.2);">
+                            📅 ENTER HISTORICAL DATA (Past Dates)
+                        </label>
+                    </div>
+
+                    <div id="historicalDatePicker" style="display: none;">
+                        <div style="margin-bottom: 10px; color: var(--muted); font-size: 0.95rem;">
+                            <strong>Historical Mode:</strong> Enter data for a past date. This data will appear in charts and analytics but will NOT update the dashboard's current metrics.
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <label for="historicalDate" style="font-weight: 600; color: var(--purple);">Select Date:</label>
+                            <input type="date" id="historicalDate" onchange="updateHistoricalDate()" style="padding: 10px; border-radius: 6px; border: 2px solid var(--purple); font-size: 1rem; font-weight: 600; min-width: 180px;">
+                        </div>
+                        <div style="margin-top: 12px; padding: 12px; background: rgba(96,165,250,0.1); border-radius: 6px;">
+                            <div style="font-size: 0.9rem; color: var(--cyan);">
+                                💡 <strong>Tip:</strong> Use this to enter baseline measurements from before your cardiac event, or to fill in missing historical data for complete trend analysis.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metric-entry-grid">
+                    <!-- All 21 metric fields here -->
+                    <div class="metric-field">
+                        <label>Resting Heart Rate (bpm)</label>
+                        <div class="metric-help">Measured after 5 min rest</div>
+                        <input type="number" id="restingHR" placeholder="e.g., 62">
+                        <div class="metric-reference">Optimal: 50-70 bpm | Average: 70-80 bpm</div>
+                    </div>
+                    <div class="metric-field">
+                        <label>Blood Pressure Systolic</label>
+                        <div class="metric-help">Top number (mmHg)</div>
+                        <input type="number" id="bpSystolic" placeholder="e.g., 120">
+                        <div class="metric-reference">Optimal: &lt;120 | Average: 120-129</div>
+                    </div>
+                    <div class="metric-field">
+                        <label>Blood Pressure Diastolic</label>
+                        <div class="metric-help">Bottom number (mmHg)</div>
+                        <input type="number" id="bpDiastolic" placeholder="e.g., 80">
+                        <div class="metric-reference">Optimal: &lt;80 | Average: 80-84</div>
+                    </div>
+                    <div class="metric-field">
+                        <label>VO2 Max (ml/kg/min)</label>
+                        <div class="metric-help">Cardiopulmonary exercise test</div>
+                        <input type="number" step="0.1" id="vo2Max" placeholder="e.g., 24.5">
+                        <div class="metric-reference">Optimal: >28 | Good: 24-28</div>
+                    </div>
+                    <div class="metric-field">
+                        <label>Max HR During Exercise (bpm)</label>
+                        <div class="metric-help">Peak heart rate achieved</div>
+                        <input type="number" id="maxHR" placeholder="e.g., 145">
+                        <div class="metric-reference">Target: 220 - age</div>
+                    </div>
+                    <div class="metric-field">
+                        <label>HR Recovery (1 min drop)</label>
+                        <div class="metric-help">HR decrease after 1 min rest</div>
+                        <input type="number" id="hrRecovery" placeholder="e.g., 25">
+                        <div class="metric-reference">Excellent: >25 | Good: 20-25</div>
+                    </div>
+                    <div class="metric-field">
+                        <label>SDNN (ms)</label>
+                        <div class="metric-help">HRV - Standard deviation</div>
+                        <input type="number" step="0.1" id="sdnn" placeholder="e.g., 35.2">
+                        <div class="metric-reference">Excellent: >50 | Good: 35-50</div>
+                    </div>
+                    <div class="metric-field">
+                        <label>RMSSD (ms)</label>
+                        <div class="metric-help">HRV - Successive differences</div>
+                        <input type="number" step="0.1" id="rmssd" placeholder="e.g., 28.5">
+                        <div class="metric-reference">Excellent: >40 | Good: 30-40</div>
+                    </div>
+                    <div class="metric-field">
+                        <label>pNN50 (%)</label>
+                        <div class="metric-help">HRV - Interval variance</div>
+                        <input type="number" step="0.1" id="pnn50" placeholder="e.g., 18.2">
+                        <div class="metric-reference">Excellent: >20% | Good: 10-20%</div>
+                    </div>
+
+                    <!-- SAMSUNG WATCH ECG FIELDS -->
+                    <div style="grid-column: 1 / -1; padding: 15px; background: rgba(167,139,250,0.1); border-left: 4px solid var(--purple); border-radius: 8px; margin: 10px 0;">
+                        <h3 style="color: var(--purple); margin: 0; font-size: 1.2rem; font-weight: 700;">⌚ Samsung Galaxy Watch ECG Data</h3>
+                        <p style="color: var(--muted); margin: 5px 0 0 0; font-size: 0.9rem;">Additional metrics from Samsung Watch ECG monitoring</p>
+                    </div>
+
+                    <div class="metric-field">
+                        <label>ECG Rhythm</label>
+                        <div class="metric-help">Heart rhythm classification</div>
+                        <select id="ecgRhythmInput" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 1rem;">
+                            <option value="">Select rhythm...</option>
+                            <option value="Normal Sinus">Normal Sinus</option>
+                            <option value="Tachycardia">Tachycardia</option>
+                            <option value="Bradycardia">Bradycardia</option>
+                            <option value="Irregular">Irregular</option>
+                        </select>
+                        <div class="metric-reference">Normal Sinus = Healthy rhythm</div>
+                    </div>
+
+                    <div class="metric-field">
+                        <label>QRS Duration (ms)</label>
+                        <div class="metric-help">Ventricular depolarization time</div>
+                        <input type="number" id="qrsDuration" placeholder="e.g., 90">
+                        <div class="metric-reference">Normal: 80-100ms</div>
+                    </div>
+
+                    <div class="metric-field">
+                        <label>R-R Interval (ms)</label>
+                        <div class="metric-help">Time between heartbeats</div>
+                        <input type="number" id="rrInterval" placeholder="e.g., 850">
+                        <div class="metric-reference">Varies with HR | Higher = Better HRV</div>
+                    </div>
+
+                    <div class="metric-field">
+                        <label>Stress Level</label>
+                        <div class="metric-help">Watch-detected stress</div>
+                        <select id="stressLevel" style="width: 100%; padding: 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); font-size: 1rem;">
+                            <option value="">Select stress level...</option>
+                            <option value="Low">Low</option>
+                            <option value="Moderate">Moderate</option>
+                            <option value="High">High</option>
+                        </select>
+                        <div class="metric-reference">Low = Optimal | High = Rest needed</div>
+                    </div>
+
+                    <div class="metric-field">
+                        <label>6-Minute Walk Distance (m)</label>
+                        <div class="metric-help">Distance walked in 6 min</div>
+                        <input type="number" id="walkDistance" placeholder="e.g., 450">
+                        <div class="metric-reference">Excellent: >500m | Good: 400-500m</div>
+                    </div>
+                    <div class="metric-field">
+                        <label>Exercise Capacity (METs)</label>
+                        <div class="metric-help">Metabolic equivalents</div>
+                        <input type="number" step="0.1" id="mets" placeholder="e.g., 7.5">
+                        <div class="metric-reference">Excellent: >10 | Good: 7-10</div>
+                    </div>
+                    <div class="metric-field">
+                        <label>Ejection Fraction (%)</label>
+                        <div class="metric-help">Blood pumped per beat</div>
+                        <input type="number" id="ejectionFraction" placeholder="e.g., 55">
+                        <div class="metric-reference">Normal: 50-70% | Reduced: 40-49%</div>
+                    </div>
+                    <div class="metric-field">
+                        <label>Oxygen Saturation / SpO2 (%) ⌚</label>
+                        <div class="metric-help">Blood oxygen level | Samsung Watch Compatible</div>
+                        <input type="number" id="spo2" placeholder="e.g., 98">
+                        <div class="metric-reference">Normal: 95-100%</div>
+                    </div>
+                    <div class="metric-field">
+                        <label>Respiratory Rate (breaths/min) ⌚</label>
+                        <div class="metric-help">Breaths per minute | Samsung Watch Compatible</div>
+                        <input type="number" id="respRate" placeholder="e.g., 14">
+                        <div class="metric-reference">Normal: 12-20</div>
+                    </div>
+                    <div class="metric-field">
+                        <label>Weight (kg)</label>
+                        <div class="metric-help">Body weight</div>
+                        <input type="number" step="0.1" id="weight" placeholder="e.g., 75.5">
+                        <div class="metric-reference">Monitor for fluid retention</div>
+                    </div>
+                    <div class="metric-field">
+                        <label>Dyspnea Score (0-10)</label>
+                        <div class="metric-help">Shortness of breath</div>
+                        <input type="number" min="0" max="10" id="dyspnea" placeholder="e.g., 2">
+                        <div class="metric-reference">0=None | 10=Severe</div>
+                    </div>
+                    <div class="metric-field">
+                        <label>Chest Pain Score (0-10)</label>
+                        <div class="metric-help">Angina/discomfort</div>
+                        <input type="number" min="0" max="10" id="chestPain" placeholder="e.g., 0">
+                        <div class="metric-reference">0=None | >3=Contact MD</div>
+                    </div>
+                    <div class="metric-field">
+                        <label>Fatigue Score (0-10)</label>
+                        <div class="metric-help">Overall fatigue</div>
+                        <input type="number" min="0" max="10" id="fatigue" placeholder="e.g., 3">
+                        <div class="metric-reference">0=None | 10=Extreme</div>
+                    </div>
+                    <div class="metric-field">
+                        <label>Edema Score (0-4)</label>
+                        <div class="metric-help">Swelling severity</div>
+                        <input type="number" min="0" max="4" id="edema" placeholder="e.g., 0">
+                        <div class="metric-reference">0=None | 4=Severe</div>
+                    </div>
+                    <div class="metric-field">
+                        <label>Quality of Life (0-100)</label>
+                        <div class="metric-help">Overall well-being</div>
+                        <input type="number" min="0" max="100" id="qualityOfLife" placeholder="e.g., 75">
+                        <div class="metric-reference">Excellent: >80 | Good: 60-80</div>
+                    </div>
+                    <div class="metric-field">
+                        <label>Sleep Quality (0-10)</label>
+                        <div class="metric-help">Last night's sleep</div>
+                        <input type="number" min="0" max="10" id="sleepQuality" placeholder="e.g., 7">
+                        <div class="metric-reference">Excellent: 8-10 | Poor: &lt;6</div>
+                    </div>
+                </div>
+
+                <!-- DAILY NOTES & SYMPTOM JOURNAL -->
+                <div style="margin-top: 40px; padding-top: 40px; border-top: 2px solid rgba(96,165,250,0.2);">
+                    <h3 style="color: var(--cyan); font-size: 1.5rem; margin-bottom: 20px; font-weight: 700;">📝 Daily Notes & Symptom Journal</h3>
+                    <div class="metric-field">
+                        <label>How are you feeling today?</label>
+                        <div class="metric-help">Document symptoms, activities, mood, medications, or anything notable</div>
+                        <textarea
+                            id="dailyNotes"
+                            placeholder="Example: Felt slightly dizzy after morning walk. Took extra beta blocker as prescribed. Energy improved by afternoon. Noticed less shortness of breath today compared to yesterday."
+                            rows="6"
+                            style="resize: vertical; font-family: inherit; line-height: 1.6;"
+                        ></textarea>
+                        <div class="metric-reference">💡 Tip: Include activities, medications, symptoms, mood, sleep quality details</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 20px; margin-top: 30px;">
+                    <button class="btn-good" onclick="saveMetrics()">💾 Save All Metrics & Notes</button>
+                    <button class="btn-danger" onclick="clearForm()">🗑️ Clear Form</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SESSIONS TAB -->
+        <div class="tab-content" id="sessions" role="tabpanel" aria-labelledby="tab-sessions">
+            <div class="section">
+                <h2>🏥 Record Therapy Session</h2>
+                <div class="metric-entry-grid">
+                    <!-- Session Details -->
+                    <div class="metric-field">
+                        <label for="sessionDate">Session Date</label>
+                        <div class="metric-help">Date of therapy session</div>
+                        <input type="date" id="sessionDate" aria-label="Session date">
+                    </div>
+                    <div class="metric-field">
+                        <label for="sessionTime">Session Time</label>
+                        <div class="metric-help">Start time</div>
+                        <input type="time" id="sessionTime" aria-label="Session time">
+                    </div>
+                    <div class="metric-field">
+                        <label for="sessionDuration">Duration (minutes)</label>
+                        <div class="metric-help">Length of session</div>
+                        <input type="number" id="sessionDuration" placeholder="45" min="1">
+                    </div>
+
+                    <!-- Therapist Information -->
+                    <div class="metric-field">
+                        <label for="therapistName">Therapist Name</label>
+                        <div class="metric-help">Physical therapist or clinician</div>
+                        <input type="text" id="therapistName" placeholder="e.g., Dr. Smith">
+                    </div>
+                    <div class="metric-field">
+                        <label for="therapyCompany">Therapy Company/Facility</label>
+                        <div class="metric-help">Healthcare facility name</div>
+                        <input type="text" id="therapyCompany" placeholder="e.g., ABC Cardiac Rehab">
+                    </div>
+                    <div class="metric-field">
+                        <label for="therapistCredentials">Credentials</label>
+                        <div class="metric-help">PT, DPT, MD, etc.</div>
+                        <input type="text" id="therapistCredentials" placeholder="e.g., DPT, CCS">
+                    </div>
+
+                    <!-- Exercise Details -->
+                    <div class="metric-field autocomplete-container">
+                        <label for="exerciseType">Primary Exercise Type</label>
+                        <div class="metric-help">Main activity performed</div>
+                        <input type="text" id="exerciseType" placeholder="Start typing..." onkeyup="showExerciseSuggestions(this.value)">
+                        <div class="autocomplete-suggestions" id="exerciseSuggestions"></div>
+                    </div>
+                    <div class="metric-field">
+                        <label for="exerciseIntensity">Exercise Intensity</label>
+                        <div class="metric-help">RPE scale</div>
+                        <select id="exerciseIntensity">
+                            <option value="">Select intensity</option>
+                            <option>Light (RPE 3-4)</option>
+                            <option>Moderate (RPE 5-6)</option>
+                            <option>Vigorous (RPE 7-8)</option>
+                        </select>
+                    </div>
+                    <div class="metric-field">
+                        <label for="targetHeartRate">Target HR Achieved</label>
+                        <div class="metric-help">Peak heart rate (bpm)</div>
+                        <input type="number" id="targetHeartRate" placeholder="e.g., 125">
+                    </div>
+
+                    <!-- Treatment Goals -->
+                    <div class="metric-field" style="grid-column: 1 / -1;">
+                        <label for="treatmentGoal">Primary Treatment Goal</label>
+                        <div class="metric-help">Main objective for this session</div>
+                        <textarea id="treatmentGoal" rows="3" placeholder="e.g., Increase walking tolerance, improve cardiovascular endurance, reduce dyspnea during activity..." style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid var(--border); background: white; color: #1a1a1a; font-size: 1rem;"></textarea>
+                    </div>
+
+                    <!-- Therapist Session Notes -->
+                    <div class="metric-field" style="grid-column: 1 / -1;">
+                        <label for="therapistNotes">Therapist Session Notes</label>
+                        <div class="metric-help">Clinical observations, patient performance, vitals, progress</div>
+                        <textarea id="therapistNotes" rows="5" placeholder="Document patient performance, vital signs during exercise, tolerance levels, any symptoms noted, modifications made, objective measurements..." style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid var(--border); background: white; color: #1a1a1a; font-size: 1rem;"></textarea>
+                    </div>
+
+                    <!-- Red Flags / Care Team Alerts -->
+                    <div class="metric-field" style="grid-column: 1 / -1;">
+                        <label for="redFlags" style="color: var(--bad); font-weight: 700;">⚠️ Red Flags / Care Team Alerts</label>
+                        <div class="metric-help" style="color: var(--bad);">URGENT: Concerning symptoms or observations requiring care team notification</div>
+                        <textarea id="redFlags" rows="4" placeholder="Report any concerning vital signs, abnormal symptoms (chest pain, severe dyspnea, dizziness), significant exercise intolerance, patient concerns requiring physician review..." style="width: 100%; padding: 12px; border-radius: 8px; border: 3px solid var(--bad); background: #fff5f5; color: #1a1a1a; font-size: 1rem;"></textarea>
+                        <div style="margin-top: 8px; padding: 10px; background: rgba(239,68,68,0.1); border-left: 4px solid var(--bad); border-radius: 4px;">
+                            <strong style="color: var(--bad);">Note:</strong> Any entries here will trigger immediate notification to the patient's care team
+                        </div>
+                    </div>
+
+                    <!-- At-Home Work Instructions -->
+                    <div class="metric-field" style="grid-column: 1 / -1;">
+                        <label for="homeExerciseInstructions" style="color: var(--good);">📝 At-Home Exercise Plan (For Patient)</label>
+                        <div class="metric-help">Instructions for patient to follow until next session</div>
+                        <textarea id="homeExerciseInstructions" rows="5" placeholder="Provide specific exercises, frequency, duration, intensity guidelines, precautions, and goals for the patient to work on at home this week..." style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid var(--good); background: white; color: #1a1a1a; font-size: 1rem;"></textarea>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-top: 20px;">
+                    <button class="btn-good" onclick="saveTherapySession()" style="flex: 1;">💾 Save Session</button>
+                    <button class="btn" onclick="clearSessionForm()" style="flex: 1; background: var(--muted);">🔄 Clear Form</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📋 Session History</h2>
+                <div style="overflow-x: auto; overflow-y: auto; max-height: 600px; border: 2px solid rgba(96,165,250,0.2); border-radius: 12px;">
+                    <table class="data-table" id="sessionsTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Therapist</th>
+                                <th>Company</th>
+                                <th>Duration</th>
+                                <th>Exercise</th>
+                                <th>Red Flags</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sessionsBody">
+                            <tr><td colspan="8" style="text-align: center; color: var(--muted);">No sessions recorded yet</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ANALYTICS TAB -->
+        <div class="tab-content" id="analytics" role="tabpanel" aria-labelledby="tab-analytics">
+            <div class="section">
+                <h2>📊 Population Comparison</h2>
+                <div class="comparison-grid" id="populationComparison">
+                    <div class="comparison-card">
+                        <div class="comparison-title">Your Metrics</div>
+                        <div class="metric-row">
+                            <span class="metric-name">VO2 Max:</span>
+                            <span class="metric-value good" id="yourVO2">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Percentile:</span>
+                            <span class="metric-value good" id="yourPercentile">--</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Risk Level:</span>
+                            <span class="metric-value good" id="yourRiskLevel">--</span>
+                        </div>
+                    </div>
+                    <div class="comparison-card">
+                        <div class="comparison-title">Age/Gender Baseline</div>
+                        <div class="metric-row">
+                            <span class="metric-name">Average VO2:</span>
+                            <span class="metric-value" id="avgVO2">20.0 ml/kg/min</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Good Threshold:</span>
+                            <span class="metric-value" id="goodThreshold">24.0 ml/kg/min</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Your Position:</span>
+                            <span class="metric-value" id="yourPosition">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CRPS RECOVERY PROBABILITY SCORE - ANALYTICS VIEW -->
+            <div class="section">
+                <h2>🎯 Recovery Probability Score (CRPS)</h2>
+
+                <!-- Compact Score Display -->
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 30px;">
+                    <!-- Score Card -->
+                    <div style="background: linear-gradient(135deg, rgba(96,165,250,0.15), rgba(96,165,250,0.05)); border: 3px solid var(--accent); border-radius: 16px; padding: 30px; text-align: center;">
+                        <div style="font-size: 0.85rem; font-weight: 600; color: var(--muted); letter-spacing: 1px; margin-bottom: 10px;">
+                            CURRENT SCORE
+                        </div>
+                        <div style="font-size: 4rem; font-weight: 900; line-height: 1;" id="analyticsCRPSScore">--</div>
+                        <div style="font-size: 0.9rem; color: var(--muted); margin-top: 5px;">out of 100</div>
+                        <div style="margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                            <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 5px;" id="analyticsCRPSInterpretation">No data yet</div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Summary -->
+                    <div style="background: var(--card); border: 2px solid rgba(96,165,250,0.2); border-radius: 16px; padding: 30px;">
+                        <h3 style="font-size: 1.1rem; color: var(--accent); margin-bottom: 15px;">📈 Score Interpretation</h3>
+                        <div style="display: grid; gap: 10px; font-size: 0.9rem;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 20px; height: 20px; background: #22c55e; border-radius: 4px;"></div>
+                                <span><strong>90-100:</strong> Superior Recovery (95-100% probability)</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 20px; height: 20px; background: #22c55e; border-radius: 4px;"></div>
+                                <span><strong>80-89:</strong> Excellent Recovery (85-94% probability)</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 20px; height: 20px; background: #3b82f6; border-radius: 4px;"></div>
+                                <span><strong>70-79:</strong> Very Good Recovery (75-84% probability)</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 20px; height: 20px; background: #3b82f6; border-radius: 4px;"></div>
+                                <span><strong>60-69:</strong> Good Recovery (65-74% probability)</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 20px; height: 20px; background: #fbbf24; border-radius: 4px;"></div>
+                                <span><strong>50-59:</strong> Fair Recovery (50-64% probability)</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 20px; height: 20px; background: #f97316; border-radius: 4px;"></div>
+                                <span><strong>40-49:</strong> Below Average (35-49% probability)</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 20px; height: 20px; background: #ef4444; border-radius: 4px;"></div>
+                                <span><strong>30-39:</strong> Poor Recovery (20-34% probability)</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 20px; height: 20px; background: #ef4444; border-radius: 4px;"></div>
+                                <span><strong>&lt;30:</strong> High Risk (0-19% probability)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CRPS 90-Day Trend Chart -->
+                <div style="background: var(--card); border: 2px solid rgba(96,165,250,0.2); border-radius: 16px; padding: 30px;">
+                    <h3 style="font-size: 1.2rem; color: var(--accent); margin-bottom: 20px;">📈 Recovery Score Trend (90 Days)</h3>
+                    <div class="chart-container">
+                        <canvas id="crpsTrendChart"></canvas>
+                    </div>
+                    <div style="margin-top: 15px; padding: 15px; background: rgba(96,165,250,0.05); border-radius: 8px; font-size: 0.85rem; color: var(--muted); text-align: center;">
+                        <strong style="color: var(--accent);">Color Legend:</strong>
+                        <span style="color: #22c55e;">■</span> Excellent (80+) |
+                        <span style="color: #3b82f6;">■</span> Better than Average (60-79) |
+                        <span style="color: #fbbf24;">■</span> Average (50-59) |
+                        <span style="color: #f97316;">■</span> Below Average (40-49) |
+                        <span style="color: #ef4444;">■</span> Poor (&lt;40)
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📊 HRV Analysis</h2>
+                <div class="chart-container">
+                    <canvas id="hrvChart"></canvas>
+                </div>
+
+                <div style="margin-top: 20px; padding: 20px; background: rgba(96,165,250,0.05); border-left: 4px solid var(--cyan); border-radius: 8px;">
+                    <h3 style="color: var(--cyan); font-size: 1.1rem; margin-bottom: 12px; font-weight: 700;">💡 What is HRV (Heart Rate Variability)?</h3>
+                    <p style="color: var(--muted); line-height: 1.6; margin-bottom: 12px;">
+                        <strong>Heart Rate Variability (HRV)</strong> measures the variation in time between each heartbeat. Unlike a steady metronome, a healthy heart has natural variations in beat-to-beat intervals, controlled by your autonomic nervous system.
+                    </p>
+                    <p style="color: var(--muted); line-height: 1.6; margin-bottom: 12px;">
+                        <strong>Why it matters for cardiac recovery:</strong> Higher HRV generally indicates better cardiovascular fitness and recovery capacity. After cardiac events, monitoring HRV helps track your heart's improving ability to adapt to stress and recover from exercise.
+                    </p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                        <div style="padding: 12px; background: rgba(6,182,212,0.1); border-radius: 6px;">
+                            <div style="font-weight: 700; color: #06b6d4; margin-bottom: 5px;">SDNN</div>
+                            <div style="font-size: 0.9rem; color: var(--muted);">Standard Deviation - Overall HRV over time. Higher is better.</div>
+                        </div>
+                        <div style="padding: 12px; background: rgba(167,139,250,0.1); border-radius: 6px;">
+                            <div style="font-weight: 700; color: #a78bfa; margin-bottom: 5px;">RMSSD</div>
+                            <div style="font-size: 0.9rem; color: var(--muted);">Short-term variability - Indicates parasympathetic (rest & recovery) activity.</div>
+                        </div>
+                        <div style="padding: 12px; background: rgba(34,197,94,0.1); border-radius: 6px;">
+                            <div style="font-weight: 700; color: #22c55e; margin-bottom: 5px;">pNN50</div>
+                            <div style="font-size: 0.9rem; color: var(--muted);">Percentage of intervals >50ms different - Reflects heart health resilience.</div>
+                        </div>
+                    </div>
+                    <p style="color: var(--muted); line-height: 1.6; margin-top: 15px; font-size: 0.95rem;">
+                        <strong>📈 Tracking Improvement:</strong> As you recover, you should see these HRV metrics gradually increase, indicating your heart's improved ability to regulate itself and respond to daily activities.
+                    </p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🕸️ Multi-Metric Analysis</h2>
+                <div class="chart-container">
+                    <canvas id="radarChart"></canvas>
+                </div>
+
+                <div style="margin-top: 20px; padding: 20px; background: rgba(96,165,250,0.05); border-left: 4px solid var(--cyan); border-radius: 8px;">
+                    <h3 style="color: var(--cyan); font-size: 1.1rem; margin-bottom: 15px; font-weight: 700;">📊 Understanding Your Metrics</h3>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                        <div style="padding: 10px; background: rgba(255,255,255,0.02); border-radius: 6px;">
+                            <div style="font-weight: 700; color: #60a5fa; margin-bottom: 4px;">VO2 Max</div>
+                            <div style="font-size: 0.9rem; color: var(--muted);">Maximum oxygen uptake - Key indicator of cardiovascular fitness</div>
+                        </div>
+                        <div style="padding: 10px; background: rgba(255,255,255,0.02); border-radius: 6px;">
+                            <div style="font-weight: 700; color: #60a5fa; margin-bottom: 4px;">HR Recovery</div>
+                            <div style="font-size: 0.9rem; color: var(--muted);">Heart rate drop after exercise - Measures cardiac efficiency</div>
+                        </div>
+                        <div style="padding: 10px; background: rgba(255,255,255,0.02); border-radius: 6px;">
+                            <div style="font-weight: 700; color: #60a5fa; margin-bottom: 4px;">Resting HR</div>
+                            <div style="font-size: 0.9rem; color: var(--muted);">Baseline heart rate - Lower values indicate better fitness</div>
+                        </div>
+                        <div style="padding: 10px; background: rgba(255,255,255,0.02); border-radius: 6px;">
+                            <div style="font-weight: 700; color: #60a5fa; margin-bottom: 4px;">HRV (SDNN)</div>
+                            <div style="font-size: 0.9rem; color: var(--muted);">Heart Rate Variability - Reflects autonomic nervous system health</div>
+                        </div>
+                        <div style="padding: 10px; background: rgba(255,255,255,0.02); border-radius: 6px;">
+                            <div style="font-weight: 700; color: #60a5fa; margin-bottom: 4px;">Exercise Capacity</div>
+                            <div style="font-size: 0.9rem; color: var(--muted);">METs (Metabolic Equivalents) - Energy expenditure during activity</div>
+                        </div>
+                        <div style="padding: 10px; background: rgba(255,255,255,0.02); border-radius: 6px;">
+                            <div style="font-weight: 700; color: #60a5fa; margin-bottom: 4px;">Recovery Speed</div>
+                            <div style="font-size: 0.9rem; color: var(--muted);">Rate of improvement since surgery - Tracks rehabilitation progress</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                        <div style="font-weight: 700; color: var(--cyan); margin-bottom: 10px;">🎨 Color Scale Guide:</div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 20px; height: 20px; background: #ef4444; border-radius: 4px;"></div>
+                                <span style="font-size: 0.9rem; color: var(--muted);"><strong>Red:</strong> Poor</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 20px; height: 20px; background: #f59e0b; border-radius: 4px;"></div>
+                                <span style="font-size: 0.9rem; color: var(--muted);"><strong>Orange:</strong> Fair</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 20px; height: 20px; background: #3b82f6; border-radius: 4px;"></div>
+                                <span style="font-size: 0.9rem; color: var(--muted);"><strong>Blue:</strong> Good</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 20px; height: 20px; background: #22c55e; border-radius: 4px;"></div>
+                                <span style="font-size: 0.9rem; color: var(--muted);"><strong>Green:</strong> Excellent</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📈 Cardiovascular Risk Stratification</h2>
+                <p style="color: var(--muted); margin-bottom: 15px;">Your overall cardiovascular health risk level based on multiple clinical indicators</p>
+                <div class="chart-container">
+                    <canvas id="riskChart"></canvas>
+                </div>
+
+                <div style="margin-top: 20px; padding: 20px; background: rgba(96,165,250,0.05); border-left: 4px solid var(--cyan); border-radius: 8px;">
+                    <h3 style="color: var(--cyan); font-size: 1.1rem; margin-bottom: 12px; font-weight: 700;">📊 Understanding Risk Stratification</h3>
+                    <p style="color: var(--muted); line-height: 1.6; margin-bottom: 12px;">
+                        <strong>Risk Stratification</strong> is a medical assessment that evaluates your overall cardiovascular health risk by combining multiple clinical factors. This helps your care team determine appropriate exercise intensity, monitoring frequency, and intervention strategies during recovery.
+                    </p>
+                    <p style="color: var(--muted); line-height: 1.6; margin-bottom: 15px;">
+                        <strong>Risk factors assessed include:</strong> VO2 Max (aerobic capacity), heart rate recovery, ejection fraction (pumping efficiency), resting heart rate, exercise tolerance, and symptom severity.
+                    </p>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 15px;">
+                        <div style="padding: 12px; background: rgba(34,197,94,0.15); border: 2px solid #22c55e; border-radius: 6px; text-align: center;">
+                            <div style="font-weight: 700; color: #22c55e; font-size: 1.1rem;">Low Risk</div>
+                            <div style="font-size: 0.85rem; color: var(--muted); margin-top: 4px;">Excellent recovery</div>
+                        </div>
+                        <div style="padding: 12px; background: rgba(132,204,22,0.15); border: 2px solid #84cc16; border-radius: 6px; text-align: center;">
+                            <div style="font-weight: 700; color: #84cc16; font-size: 1.1rem;">Below Average</div>
+                            <div style="font-size: 0.85rem; color: var(--muted); margin-top: 4px;">Good progress</div>
+                        </div>
+                        <div style="padding: 12px; background: rgba(245,158,11,0.15); border: 2px solid #f59e0b; border-radius: 6px; text-align: center;">
+                            <div style="font-weight: 700; color: #f59e0b; font-size: 1.1rem;">Average</div>
+                            <div style="font-size: 0.85rem; color: var(--muted); margin-top: 4px;">Standard monitoring</div>
+                        </div>
+                        <div style="padding: 12px; background: rgba(249,115,22,0.15); border: 2px solid #f97316; border-radius: 6px; text-align: center;">
+                            <div style="font-weight: 700; color: #f97316; font-size: 1.1rem;">Above Average</div>
+                            <div style="font-size: 0.85rem; color: var(--muted); margin-top: 4px;">Closer supervision</div>
+                        </div>
+                        <div style="padding: 12px; background: rgba(239,68,68,0.15); border: 2px solid #ef4444; border-radius: 6px; text-align: center;">
+                            <div style="font-weight: 700; color: #ef4444; font-size: 1.1rem;">High Risk</div>
+                            <div style="font-size: 0.85rem; color: var(--muted); margin-top: 4px;">Intensive care needed</div>
+                        </div>
+                    </div>
+
+                    <p style="color: var(--muted); line-height: 1.6; margin-top: 15px; font-size: 0.95rem;">
+                        <strong>🎯 Goal:</strong> As you progress through cardiac rehabilitation, your risk level should gradually decrease from high/above average toward low risk, indicating improved cardiovascular health and reduced likelihood of adverse events.
+                    </p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📈 Recovery Progress - Complete History</h2>
+                <p style="color: var(--muted); margin-bottom: 15px;">Track all your metrics over time. Click legend items to toggle individual metrics, or use Select All to view everything.</p>
+
+                <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                    <button id="selectAllMetricsBtn" onclick="toggleAllMetrics()" style="padding: 12px 30px; background: var(--good); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(96,165,250,0.3); transition: all 0.2s;">
+                        ✓ Select All Metrics
+                    </button>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="recoveryProgressChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIDEOS TAB -->
+        <div class="tab-content" id="videos" role="tabpanel" aria-labelledby="tab-videos">
+            <div class="section">
+                <h2>🎥 Exercise Video Library - 12 Week Program</h2>
+                <p style="color: var(--muted); margin-bottom: 30px;">Evidence-based exercises for cardiac recovery</p>
+
+                <div class="video-grid">
+                    <!-- WEEK 1: Hospital Phase - Phase 1 Cardiac Rehab -->
+                    <div class="video-card" onclick="window.open('https://www.youtube.com/watch?v=J3nhlVfodGU', '_blank')" aria-label="Week 1: Cardiac rehab exercise">
+                        <div class="video-thumbnail thumb-chair"></div>
+                        <div class="video-info">
+                            <div class="video-title">Week 1: Cardiac Rehab Exercise</div>
+                            <div class="video-meta">
+                                <span class="video-badge week">Week 1</span>
+                                <span class="video-badge difficulty">Beginner</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WEEK 2: Early Mobility - Chair-Based Exercises -->
+                    <div class="video-card" onclick="window.open('https://www.youtube.com/watch?v=-JsuNKbAAkU', '_blank')" aria-label="Week 2: Cardiac rehab exercise">
+                        <div class="video-thumbnail thumb-chair-2"></div>
+                        <div class="video-info">
+                            <div class="video-title">Week 2: Cardiac Rehab Exercise</div>
+                            <div class="video-meta">
+                                <span class="video-badge week">Week 2</span>
+                                <span class="video-badge difficulty">Beginner</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WEEK 3: Early Walking Program -->
+                    <div class="video-card" onclick="window.open('https://www.youtube.com/watch?v=jzReP325QUg', '_blank')" aria-label="Week 3: Cardiac rehab exercise">
+                        <div class="video-thumbnail thumb-walk"></div>
+                        <div class="video-info">
+                            <div class="video-title">Week 3: Cardiac Rehab Exercise</div>
+                            <div class="video-meta">
+                                <span class="video-badge week">Week 3</span>
+                                <span class="video-badge difficulty">Beginner</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WEEK 4: Stretching & Balance -->
+                    <div class="video-card" onclick="window.open('https://www.youtube.com/watch?v=UPO73VMYeSE', '_blank')" aria-label="Week 4: Cardiac rehab exercise">
+                        <div class="video-thumbnail thumb-cardio"></div>
+                        <div class="video-info">
+                            <div class="video-title">Week 4: Cardiac Rehab Exercise</div>
+                            <div class="video-meta">
+                                <span class="video-badge week">Week 4</span>
+                                <span class="video-badge difficulty">Beginner</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WEEK 5: Standing Exercises -->
+                    <div class="video-card" onclick="window.open('https://www.youtube.com/watch?v=VHbY-zdSbQM', '_blank')" aria-label="Week 5: Cardiac rehab exercise">
+                        <div class="video-thumbnail thumb-walk-2"></div>
+                        <div class="video-info">
+                            <div class="video-title">Week 5: Cardiac Rehab Exercise</div>
+                            <div class="video-meta">
+                                <span class="video-badge week">Week 5</span>
+                                <span class="video-badge difficulty">Intermediate</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WEEK 6: Interval Walking -->
+                    <div class="video-card" onclick="window.open('https://www.youtube.com/watch?v=GHEeocYzdTI', '_blank')" aria-label="Week 6: Cardiac rehab exercise">
+                        <div class="video-thumbnail thumb-treadmill"></div>
+                        <div class="video-info">
+                            <div class="video-title">Week 6: Cardiac Rehab Exercise</div>
+                            <div class="video-meta">
+                                <span class="video-badge week">Week 6</span>
+                                <span class="video-badge difficulty">Intermediate</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WEEK 7: Light Resistance Training -->
+                    <div class="video-card" onclick="window.open('https://www.youtube.com/watch?v=09-J4TUKoBM', '_blank')" aria-label="Week 7: Cardiac rehab exercise">
+                        <div class="video-thumbnail thumb-strength"></div>
+                        <div class="video-info">
+                            <div class="video-title">Week 7: Cardiac Rehab Exercise</div>
+                            <div class="video-meta">
+                                <span class="video-badge week">Week 7</span>
+                                <span class="video-badge difficulty">Intermediate</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WEEK 8: Stationary Cycling -->
+                    <div class="video-card" onclick="window.open('https://www.youtube.com/watch?v=GHEeocYzdTI&t=194s', '_blank')" aria-label="Week 8: Cardiac rehab exercise">
+                        <div class="video-thumbnail thumb-bike"></div>
+                        <div class="video-info">
+                            <div class="video-title">Week 8: Cardiac Rehab Exercise</div>
+                            <div class="video-meta">
+                                <span class="video-badge week">Week 8</span>
+                                <span class="video-badge difficulty">Intermediate</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WEEK 9: Strength Training with Weights -->
+                    <div class="video-card" onclick="window.open('https://www.youtube.com/watch?v=LMXU8TQtyFc', '_blank')" aria-label="Week 9: Cardiac rehab exercise">
+                        <div class="video-thumbnail thumb-strength-2"></div>
+                        <div class="video-info">
+                            <div class="video-title">Week 9: Cardiac Rehab Exercise</div>
+                            <div class="video-meta">
+                                <span class="video-badge week">Week 9</span>
+                                <span class="video-badge difficulty">Advanced</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WEEK 10: Circuit Training -->
+                    <div class="video-card" onclick="window.open('https://www.youtube.com/watch?v=e-2dVXEHubI', '_blank')" aria-label="Week 10: Cardiac rehab exercise">
+                        <div class="video-thumbnail thumb-elliptical"></div>
+                        <div class="video-info">
+                            <div class="video-title">Week 10: Cardiac Rehab Exercise</div>
+                            <div class="video-meta">
+                                <span class="video-badge week">Week 10</span>
+                                <span class="video-badge difficulty">Advanced</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WEEK 11: Advanced Cardio -->
+                    <div class="video-card" onclick="window.open('https://www.youtube.com/shorts/BkELFiAHhvE', '_blank')" aria-label="Week 11: Cardiac rehab exercise">
+                        <div class="video-thumbnail thumb-advanced"></div>
+                        <div class="video-info">
+                            <div class="video-title">Week 11: Cardiac Rehab Exercise</div>
+                            <div class="video-meta">
+                                <span class="video-badge week">Week 11</span>
+                                <span class="video-badge difficulty">Advanced</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WEEK 12: Return to Function -->
+                    <div class="video-card" onclick="window.open('https://www.youtube.com/watch?v=JIXkf_i3kG0', '_blank')" aria-label="Week 12: Cardiac rehab exercise">
+                        <div class="video-thumbnail thumb-recovery"></div>
+                        <div class="video-info">
+                            <div class="video-title">Week 12: Cardiac Rehab Exercise</div>
+                            <div class="video-meta">
+                                <span class="video-badge week">Week 12</span>
+                                <span class="video-badge difficulty">Advanced</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORY TAB -->
+        <div class="tab-content" id="history" role="tabpanel" aria-labelledby="tab-history">
+            <div class="section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">📋 All Recorded Data</h2>
+                    <button onclick="clearAllPatientData()" style="padding: 12px 24px; background: #ef4444; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(239,68,68,0.3); transition: all 0.2s; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                        <span style="font-size: 1.2rem;">🗑️</span>
+                        <span>Clear All Patient Data</span>
+                    </button>
+                </div>
+                <div style="overflow-x: auto; overflow-y: auto; max-height: 600px; border: 2px solid rgba(96,165,250,0.2); border-radius: 12px;">
+                    <table class="data-table" id="historyTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Day</th>
+                                <th>Resting HR</th>
+                                <th>BP Sys</th>
+                                <th>BP Dia</th>
+                                <th>VO2 Max</th>
+                                <th>Max HR</th>
+                                <th>HR Recov</th>
+                                <th>SDNN</th>
+                                <th>RMSSD</th>
+                                <th>pNN50</th>
+                                <th>6MWD</th>
+                                <th>METs</th>
+                                <th>EF %</th>
+                                <th>SpO2</th>
+                                <th>Resp Rate</th>
+                                <th>Weight</th>
+                                <th>Dyspnea</th>
+                                <th>Chest Pain</th>
+                                <th>Fatigue</th>
+                                <th>Edema</th>
+                                <th>QOL</th>
+                                <th>Sleep</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyBody">
+                            <tr><td colspan="24" style="text-align: center; color: var(--muted);">No data recorded yet</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- HEART RATE MONITOR TAB -->
+        <div class="tab-content" id="hrmonitor" role="tabpanel" aria-labelledby="tab-hrmonitor">
+            <div class="section">
+                <h2 style="color: var(--accent); text-align: center; font-size: 2rem; margin-bottom: 10px;">❤️ Heart Rate Monitor</h2>
+                <p style="text-align: center; color: var(--muted); font-size: 1.1rem; margin-bottom: 30px;">Real-time heart rate tracking and analysis</p>
+
+                <!-- CURRENT HEART RATE DISPLAY -->
+                <div style="display: flex; justify-content: center; margin-bottom: 40px;">
+                    <div style="background: linear-gradient(135deg, rgba(96,165,250,0.15) 0%, rgba(167,139,250,0.15) 100%); border: 3px solid var(--accent); border-radius: 20px; padding: 40px 60px; box-shadow: 0 8px 24px rgba(96,165,250,0.2); text-align: center; min-width: 300px;">
+                        <div style="font-size: 1.2rem; color: var(--muted); margin-bottom: 10px; font-weight: 600;">Current Heart Rate</div>
+                        <div id="currentHR" style="font-size: 5rem; font-weight: 800; color: var(--accent); margin: 20px 0; font-family: 'Segoe UI', system-ui, sans-serif; text-shadow: 0 2px 10px rgba(96,165,250,0.3);">--</div>
+                        <div style="font-size: 1.5rem; color: var(--muted); font-weight: 600;">BPM</div>
+                        <div id="hrStatus" style="margin-top: 20px; padding: 10px 20px; background: rgba(96,165,250,0.2); border-radius: 8px; font-weight: 600; color: var(--cyan);">No sensor connected</div>
+                    </div>
+                </div>
+
+                <!-- DEVICE SELECTION -->
+                <div style="background: rgba(96,165,250,0.05); border: 2px solid rgba(96,165,250,0.2); border-radius: 12px; padding: 25px; margin-bottom: 30px;">
+                    <h3 style="color: var(--cyan); font-size: 1.3rem; margin-bottom: 20px; font-weight: 700; text-align: center;">📱 Connect Your Device</h3>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 25px;">
+                        <!-- Polar H10 Card -->
+                        <div style="background: white; border: 2px solid #ef4444; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(239,68,68,0.15); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(239,68,68,0.25)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(239,68,68,0.15)'">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                                <div style="font-size: 2rem;">❤️</div>
+                                <div>
+                                    <div style="font-weight: 700; font-size: 1.1rem; color: #1f2937;">Polar H10</div>
+                                    <div style="font-size: 0.85rem; color: #6b7280;">Chest Strap Monitor</div>
+                                </div>
+                            </div>
+                            <div id="polarStatus" style="padding: 8px 12px; background: rgba(156,163,175,0.1); border-radius: 6px; font-size: 0.9rem; color: #6b7280; margin-bottom: 12px; font-weight: 600;">
+                                🔴 Not Connected
+                            </div>
+                            <button id="polarConnectBtn" onclick="connectPolarH10()" style="width: 100%; padding: 12px; background: #ef4444; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                                Connect Polar H10
+                            </button>
+                        </div>
+
+                        <!-- Samsung Galaxy Watch Card -->
+                        <div style="background: white; border: 2px solid #3b82f6; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(59,130,246,0.15); transition: all 0.3s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 20px rgba(59,130,246,0.25)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(59,130,246,0.15)'">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 15px;">
+                                <div style="font-size: 2rem;">⌚</div>
+                                <div>
+                                    <div style="font-weight: 700; font-size: 1.1rem; color: #1f2937;">Samsung Watch</div>
+                                    <div style="font-size: 0.85rem; color: #6b7280;">Galaxy Watch w/ ECG</div>
+                                </div>
+                            </div>
+                            <div id="samsungStatus" style="padding: 8px 12px; background: rgba(156,163,175,0.1); border-radius: 6px; font-size: 0.9rem; color: #6b7280; margin-bottom: 12px; font-weight: 600;">
+                                🔴 Not Connected
+                            </div>
+                            <button id="samsungConnectBtn" onclick="connectSamsungWatch()" style="width: 100%; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
+                                Connect Samsung Watch
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Connected Device Info -->
+                    <div id="deviceInfo" style="display: none; padding: 15px; background: rgba(34,197,94,0.1); border-left: 4px solid #22c55e; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 700; color: #22c55e; margin-bottom: 5px;">✓ Connected to <span id="connectedDeviceName"></span></div>
+                                <div style="font-size: 0.9rem; color: #6b7280;">Battery: <span id="deviceBattery">--</span>% | Signal: <span id="deviceSignal">Strong</span></div>
+                            </div>
+                            <button onclick="disconnectDevice()" style="padding: 8px 16px; background: #ef4444; color: white; border: none; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer;">
+                                Disconnect
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Control Buttons -->
+                    <div style="display: flex; justify-content: center; gap: 20px;">
+                        <button id="startHRBtn" onclick="startHRMonitoring()" disabled style="padding: 15px 40px; background: var(--good); color: white; border: none; border-radius: 10px; font-size: 1.2rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(34,197,94,0.3); transition: all 0.2s; display: flex; align-items: center; gap: 10px; opacity: 0.5;">
+                            <span>▶️</span>
+                            <span>Start Monitoring</span>
+                        </button>
+                        <button id="stopHRBtn" onclick="stopHRMonitoring()" disabled style="padding: 15px 40px; background: var(--bad); color: white; border: none; border-radius: 10px; font-size: 1.2rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(239,68,68,0.3); transition: all 0.2s; display: flex; align-items: center; gap: 10px; opacity: 0.5;">
+                            <span>⏹️</span>
+                            <span>Stop</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- HEART RATE HISTORY CHART -->
+                <div style="background: var(--card-bg); border: 2px solid rgba(96,165,250,0.2); border-radius: 12px; padding: 25px; margin-bottom: 30px;">
+                    <h3 style="color: var(--cyan); font-size: 1.3rem; margin-bottom: 20px; font-weight: 700;">📈 Heart Rate History</h3>
+                    <div class="chart-container">
+                        <canvas id="hrMonitorChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- STATISTICS -->
+                <div class="comparison-grid">
+                    <div class="comparison-card">
+                        <div class="comparison-title">Session Statistics</div>
+                        <div class="metric-row">
+                            <span class="metric-name">Average HR:</span>
+                            <span class="metric-value" id="hrAverage">-- bpm</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Min HR:</span>
+                            <span class="metric-value" id="hrMin">-- bpm</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Max HR:</span>
+                            <span class="metric-value" id="hrMax">-- bpm</span>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-name">Duration:</span>
+                            <span class="metric-value" id="hrDuration">0:00</span>
+                        </div>
+                    </div>
+
+                    <div class="comparison-card">
+                        <div class="comparison-title">Heart Rate Zones</div>
+                        <div style="margin-top: 15px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding: 8px; background: rgba(34,197,94,0.1); border-radius: 6px;">
+                                <span style="font-weight: 600; color: #22c55e;">🟢 Resting (&lt; 60)</span>
+                                <span id="zoneResting" style="font-weight: 700; color: #22c55e;">0%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding: 8px; background: rgba(59,130,246,0.1); border-radius: 6px;">
+                                <span style="font-weight: 600; color: #3b82f6;">🔵 Light (60-100)</span>
+                                <span id="zoneLight" style="font-weight: 700; color: #3b82f6;">0%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; padding: 8px; background: rgba(245,158,11,0.1); border-radius: 6px;">
+                                <span style="font-weight: 600; color: #f59e0b;">🟠 Moderate (100-140)</span>
+                                <span id="zoneModerate" style="font-weight: 700; color: #f59e0b;">0%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px; background: rgba(239,68,68,0.1); border-radius: 6px;">
+                                <span style="font-weight: 600; color: #ef4444;">🔴 High (> 140)</span>
+                                <span id="zoneHigh" style="font-weight: 700; color: #ef4444;">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ECG DATA (Samsung Watch Only) -->
+                <div id="ecgSection" style="display: block; background: var(--card-bg); border: 2px solid rgba(167,139,250,0.2); border-radius: 12px; padding: 25px; margin-bottom: 30px;">
+                    <h3 style="color: var(--purple); font-size: 1.3rem; margin-bottom: 20px; font-weight: 700;">🫀 Samsung Watch - Advanced ECG Dashboard</h3>
+
+                    <!-- ECG Metrics Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px;">
+                        <div style="padding: 15px; background: rgba(167,139,250,0.1); border-radius: 8px;">
+                            <div style="font-size: 0.9rem; color: var(--muted); margin-bottom: 5px;">Rhythm</div>
+                            <div id="ecgRhythm" style="font-size: 1.3rem; font-weight: 700; color: var(--purple);">--</div>
+                        </div>
+                        <div style="padding: 15px; background: rgba(167,139,250,0.1); border-radius: 8px;">
+                            <div style="font-size: 0.9rem; color: var(--muted); margin-bottom: 5px;">QRS Duration</div>
+                            <div id="ecgQRS" style="font-size: 1.3rem; font-weight: 700; color: var(--purple);">-- ms</div>
+                        </div>
+                        <div style="padding: 15px; background: rgba(167,139,250,0.1); border-radius: 8px;">
+                            <div style="font-size: 0.9rem; color: var(--muted); margin-bottom: 5px;">R-R Interval</div>
+                            <div id="ecgRR" style="font-size: 1.3rem; font-weight: 700; color: var(--purple);">-- ms</div>
+                        </div>
+                        <div style="padding: 15px; background: rgba(167,139,250,0.1); border-radius: 8px;">
+                            <div style="font-size: 0.9rem; color: var(--muted); margin-bottom: 5px;">HRV (SDNN)</div>
+                            <div id="ecgHRV" style="font-size: 1.3rem; font-weight: 700; color: var(--purple);">-- ms</div>
+                        </div>
+                        <div style="padding: 15px; background: rgba(167,139,250,0.1); border-radius: 8px;">
+                            <div style="font-size: 0.9rem; color: var(--muted); margin-bottom: 5px;">RMSSD</div>
+                            <div id="ecgRMSSD" style="font-size: 1.3rem; font-weight: 700; color: var(--purple);">-- ms</div>
+                        </div>
+                        <div style="padding: 15px; background: rgba(167,139,250,0.1); border-radius: 8px;">
+                            <div style="font-size: 0.9rem; color: var(--muted); margin-bottom: 5px;">pNN50</div>
+                            <div id="ecgPNN50" style="font-size: 1.3rem; font-weight: 700; color: var(--purple);">-- %</div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Samsung Watch Metrics -->
+                    <div style="background: rgba(59,130,246,0.05); border-radius: 8px; padding: 20px; margin-top: 20px;">
+                        <h4 style="color: #3b82f6; font-size: 1.1rem; margin-bottom: 15px; font-weight: 700;">📊 Detailed Watch Metrics</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
+                            <div>
+                                <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 5px;">SpO2 Level</div>
+                                <div id="watchSpO2" style="font-size: 1.2rem; font-weight: 700; color: #3b82f6;">-- %</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 5px;">Stress Level</div>
+                                <div id="watchStress" style="font-size: 1.2rem; font-weight: 700; color: #3b82f6;">--</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 5px;">Resp. Rate</div>
+                                <div id="watchRespRate" style="font-size: 1.2rem; font-weight: 700; color: #3b82f6;">-- bpm</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 5px;">VO2 Max Est.</div>
+                                <div id="watchVO2" style="font-size: 1.2rem; font-weight: 700; color: #3b82f6;">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DATA OVERRIDE SECTION -->
+                <div id="overrideSection" style="display: none; background: rgba(239,68,68,0.05); border: 2px solid rgba(239,68,68,0.2); border-radius: 12px; padding: 25px; margin-bottom: 30px;">
+                    <h3 style="color: #ef4444; font-size: 1.3rem; margin-bottom: 15px; font-weight: 700;">⚠️ Override Therapy Session Data</h3>
+                    <p style="color: var(--muted); line-height: 1.6; margin-bottom: 20px;">
+                        Click the button below to transfer the current monitoring session data to the Data Entry tab.
+                        This will <strong>override</strong> any existing therapy session data with the real-time measurements from your connected device.
+                    </p>
+
+                    <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                        <button onclick="overrideTherapyData()" style="padding: 15px 30px; background: #ef4444; color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(239,68,68,0.3); transition: all 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                            🔄 Override Therapy Session Data
+                        </button>
+                        <div style="padding: 10px 15px; background: rgba(96,165,250,0.1); border-radius: 8px; font-size: 0.9rem; color: var(--muted);">
+                            <strong>Current Session:</strong> <span id="overrideSessionInfo">No active session</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; padding: 15px; background: rgba(96,165,250,0.1); border-left: 4px solid var(--cyan); border-radius: 6px;">
+                        <strong style="color: var(--cyan);">ℹ️ What gets transferred:</strong>
+                        <ul style="margin: 10px 0 0 20px; color: var(--muted); line-height: 1.8;">
+                            <li><strong>Resting HR:</strong> Average heart rate from session</li>
+                            <li><strong>Max HR:</strong> Maximum recorded heart rate</li>
+                            <li><strong>HR Recovery:</strong> Calculated from session end</li>
+                            <li><strong>HRV Metrics:</strong> SDNN, RMSSD, pNN50 (if available)</li>
+                            <li><strong>Samsung Watch Only:</strong> SpO2, Respiratory Rate, VO2 Max estimate</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- INSTRUCTIONS -->
+                <div style="margin-top: 30px; padding: 20px; background: rgba(96,165,250,0.05); border-left: 4px solid var(--cyan); border-radius: 8px;">
+                    <h3 style="color: var(--cyan); font-size: 1.1rem; margin-bottom: 12px; font-weight: 700;">💡 Device Setup Instructions</h3>
+
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #ef4444; font-weight: 700; margin-bottom: 10px;">❤️ Polar H10 Setup:</h4>
+                        <ol style="color: var(--muted); line-height: 1.8; margin-left: 20px;">
+                            <li>Moisten the electrode pads on the chest strap</li>
+                            <li>Wear the strap directly on skin, just below chest muscles</li>
+                            <li>Make sure the Polar H10 sensor is securely clipped to the strap</li>
+                            <li>The sensor will automatically turn on when worn</li>
+                            <li>Click "Connect Polar H10" above and select your device (shows as "Polar H10 XXXXXXXX")</li>
+                            <li>Once connected, press "Start Monitoring" to begin tracking</li>
+                        </ol>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: #3b82f6; font-weight: 700; margin-bottom: 10px;">⌚ Samsung Galaxy Watch Setup:</h4>
+                        <ol style="color: var(--muted); line-height: 1.8; margin-left: 20px;">
+                            <li>Ensure your Galaxy Watch is charged and worn securely on your wrist</li>
+                            <li>On your watch: Settings → Connections → Bluetooth → Advanced → Bluetooth Sharing → Enable</li>
+                            <li>Make sure the watch is not currently paired with Samsung Health on your phone (temporarily disconnect if needed)</li>
+                            <li>Click "Connect Samsung Watch" above and select your watch from the list</li>
+                            <li>Grant permission for heart rate monitoring when prompted</li>
+                            <li>For ECG readings: Follow the on-watch prompts to place your finger on the button</li>
+                        </ol>
+                    </div>
+
+                    <div style="padding: 15px; background: rgba(239,68,68,0.1); border-left: 4px solid #ef4444; border-radius: 6px; margin-top: 20px;">
+                        <h4 style="color: #ef4444; font-weight: 700; margin-bottom: 8px;">⚠️ Important Medical Note:</h4>
+                        <p style="color: var(--muted); line-height: 1.6; margin: 0;">
+                            <strong>This app is for health monitoring only and should not replace professional medical advice.</strong>
+                            If your wife experiences chest pain, shortness of breath, irregular heartbeat, dizziness, or any concerning symptoms,
+                            seek immediate medical attention. Always consult with your healthcare provider before starting any new exercise program.
+                            The ECG feature on Samsung Watch can detect AFib but is not a substitute for professional ECG interpretation.
+                        </p>
+                    </div>
+
+                    <div style="padding: 15px; background: rgba(96,165,250,0.1); border-left: 4px solid var(--cyan); border-radius: 6px; margin-top: 15px;">
+                        <h4 style="color: var(--cyan); font-weight: 700; margin-bottom: 8px;">🔋 Battery Tips:</h4>
+                        <ul style="color: var(--muted); line-height: 1.6; margin: 8px 0 0 20px;">
+                            <li><strong>Polar H10:</strong> Replaceable CR2025 battery lasts ~400 hours. Low battery warning will appear when below 10%</li>
+                            <li><strong>Samsung Watch:</strong> Continuous HR monitoring drains battery faster. Charge daily for reliable readings</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EDUCATION TAB -->
+        <div class="tab-content" id="education" role="tabpanel" aria-labelledby="tab-education">
+            <div class="section">
+                <h2 style="color: var(--accent); text-align: center; font-size: 2rem; margin-bottom: 10px;">📚 Understanding Your Cardiac Health Metrics</h2>
+                <p style="text-align: center; color: var(--muted); font-size: 1.1rem; margin-bottom: 40px;">A comprehensive guide to all the medical terms and measurements used in this app</p>
+
+                <!-- CARDIOVASCULAR FITNESS METRICS -->
+                <div style="margin-bottom: 50px;">
+                    <h3 style="color: var(--purple); font-size: 1.8rem; margin-bottom: 30px; padding-bottom: 10px; border-bottom: 3px solid var(--purple);">💪 Cardiovascular Fitness Metrics</h3>
+
+                    <div style="background: rgba(96,165,250,0.08); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--cyan);">
+                        <h4 style="color: var(--cyan); font-size: 1.4rem; margin-bottom: 15px;">VO2 Max (Maximal Oxygen Consumption)</h4>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it means:</strong> VO2 Max stands for "Volume of Oxygen Maximum" - the maximum amount of oxygen your body can use during intense exercise.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it measures:</strong> How efficiently your heart, lungs, and muscles work together to deliver and use oxygen during physical activity. Measured in milliliters of oxygen per kilogram of body weight per minute (ml/kg/min).</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">Why it matters:</strong> Higher VO2 Max = better cardiovascular fitness and endurance. It's the gold standard for measuring aerobic fitness and heart recovery after surgery.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">How it's tested:</strong> Usually measured during a cardiopulmonary exercise test (CPET) where you exercise on a treadmill or bike while wearing a mask that measures oxygen and CO2.</p>
+                        <p style="margin-bottom: 0; line-height: 1.8;"><strong style="color: var(--good);">Healthy targets:</strong> Excellent: >28 ml/kg/min | Good: 24-28 | Fair: 20-24 | Poor: <20</p>
+                        <div style="margin-top: 15px; padding: 15px; background: rgba(255,255,255,0.5); border-radius: 8px;">
+                            <p style="margin: 0; font-style: italic; color: #1a1a1a; font-weight: 700;"><strong>Note:</strong> "Expected VO2 (Generic)" in the app refers to the average expected VO2 Max for someone at your recovery stage, based on general cardiac rehab population data rather than your personal baseline.</p>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(96,165,250,0.08); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--cyan);">
+                        <h4 style="color: var(--cyan); font-size: 1.4rem; margin-bottom: 15px;">METs (Metabolic Equivalents of Task)</h4>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it means:</strong> A way to measure the energy cost of physical activities relative to rest.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it measures:</strong> How much oxygen your body uses during activity compared to sitting quietly. 1 MET = resting oxygen consumption (about 3.5 ml/kg/min).</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">Why it matters:</strong> Helps determine safe exercise intensity levels. After cardiac surgery, you'll gradually increase from low METs (2-3) to higher levels (7-10+).</p>
+                        <p style="margin-bottom: 0; line-height: 1.8;"><strong style="color: var(--good);">Healthy targets:</strong> Excellent: >10 METs | Good: 7-10 | Fair: 5-7 | Poor: <5<br>
+                        <span style="color: var(--muted); font-size: 0.95rem;">Examples: Walking slowly = 2-3 METs | Brisk walking = 4-5 METs | Jogging = 7-8 METs | Running = 10+ METs</span></p>
+                    </div>
+
+                    <div style="background: rgba(96,165,250,0.08); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--cyan);">
+                        <h4 style="color: var(--cyan); font-size: 1.4rem; margin-bottom: 15px;">6-Minute Walk Distance (6MWD)</h4>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it means:</strong> The maximum distance you can walk in 6 minutes at your own pace.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it measures:</strong> Functional exercise capacity and endurance - a practical measure of how well you can perform daily activities.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">Why it matters:</strong> Simple, safe test that correlates well with quality of life and recovery progress. Easy to perform at home or in rehab.</p>
+                        <p style="margin-bottom: 0; line-height: 1.8;"><strong style="color: var(--good);">Healthy targets:</strong> Excellent: >500 meters | Good: 400-500m | Fair: 300-400m | Poor: <300m</p>
+                    </div>
+                </div>
+
+                <!-- HEART RATE METRICS -->
+                <div style="margin-bottom: 50px;">
+                    <h3 style="color: var(--purple); font-size: 1.8rem; margin-bottom: 30px; padding-bottom: 10px; border-bottom: 3px solid var(--purple);">❤️ Heart Rate Metrics</h3>
+
+                    <div style="background: rgba(167,139,250,0.08); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--purple);">
+                        <h4 style="color: var(--purple); font-size: 1.4rem; margin-bottom: 15px;">Resting Heart Rate (RHR)</h4>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it means:</strong> Your heart rate when completely at rest, typically measured first thing in the morning or after 5 minutes of quiet sitting.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it measures:</strong> How many times your heart beats per minute (bpm) at rest. A lower RHR generally indicates better cardiovascular fitness.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">Why it matters:</strong> Tracks heart recovery and efficiency. As your heart gets stronger, it pumps more blood per beat, so it doesn't need to beat as often.</p>
+                        <p style="margin-bottom: 0; line-height: 1.8;"><strong style="color: var(--good);">Healthy targets:</strong> Excellent: 50-60 bpm | Good: 60-70 bpm | Average: 70-80 bpm | Concerning: >100 bpm</p>
+                    </div>
+
+                    <div style="background: rgba(167,139,250,0.08); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--purple);">
+                        <h4 style="color: var(--purple); font-size: 1.4rem; margin-bottom: 15px;">Maximum Heart Rate (Max HR)</h4>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it means:</strong> The highest heart rate you achieve during maximum physical effort.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it measures:</strong> Your heart's upper limit during intense exercise. Used to calculate safe exercise target zones.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">Why it matters:</strong> Helps determine personalized exercise intensity zones. After cardiac surgery, you'll exercise at controlled percentages of max HR (usually 60-80%).</p>
+                        <p style="margin-bottom: 0; line-height: 1.8;"><strong style="color: var(--good);">Estimation formula:</strong> 220 - your age = estimated max HR<br>
+                        <span style="color: var(--muted); font-size: 0.95rem;">Example: 65 years old = 220 - 65 = 155 max HR</span></p>
+                    </div>
+
+                    <div style="background: rgba(167,139,250,0.08); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--purple);">
+                        <h4 style="color: var(--purple); font-size: 1.4rem; margin-bottom: 15px;">Heart Rate Recovery (HRR)</h4>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it means:</strong> How much your heart rate drops in the first minute after stopping exercise.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it measures:</strong> The difference between your peak exercise heart rate and your heart rate 1 minute after stopping. Measured in beats per minute (bpm).</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">Why it matters:</strong> Strong predictor of cardiovascular health and mortality risk. A faster recovery indicates better autonomic nervous system function and heart health.</p>
+                        <p style="margin-bottom: 0; line-height: 1.8;"><strong style="color: var(--good);">Healthy targets:</strong> Excellent: >25 bpm drop | Good: 20-25 bpm | Fair: 15-20 bpm | Concerning: <12 bpm</p>
+                    </div>
+                </div>
+
+                <!-- HRV METRICS -->
+                <div style="margin-bottom: 50px;">
+                    <h3 style="color: var(--purple); font-size: 1.8rem; margin-bottom: 30px; padding-bottom: 10px; border-bottom: 3px solid var(--purple);">📊 Heart Rate Variability (HRV) Metrics</h3>
+
+                    <div style="background: rgba(250,204,21,0.1); padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 2px solid rgba(250,204,21,0.3);">
+                        <p style="margin: 0; line-height: 1.8;"><strong style="color: var(--accent);">What is HRV?</strong> Heart Rate Variability measures the variation in time between heartbeats. A healthy heart doesn't beat like a metronome - there are tiny variations that reflect your autonomic nervous system's balance. Higher HRV generally indicates better stress resilience and cardiovascular health.</p>
+                    </div>
+
+                    <div style="background: rgba(96,165,250,0.08); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--cyan);">
+                        <h4 style="color: var(--cyan); font-size: 1.4rem; margin-bottom: 15px;">SDNN (Standard Deviation of NN Intervals)</h4>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it means:</strong> The standard deviation of the time between consecutive heartbeats over a recording period.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it measures:</strong> Overall heart rate variability and autonomic nervous system function. Measured in milliseconds (ms).</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">Why it matters:</strong> Reflects your body's ability to adapt to stress. Low SDNN is linked to higher cardiovascular risk; improving SDNN shows better recovery and adaptation.</p>
+                        <p style="margin-bottom: 0; line-height: 1.8;"><strong style="color: var(--good);">Healthy targets:</strong> Excellent: >50 ms | Good: 35-50 ms | Fair: 25-35 ms | Poor: <25 ms</p>
+                    </div>
+
+                    <div style="background: rgba(96,165,250,0.08); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--cyan);">
+                        <h4 style="color: var(--cyan); font-size: 1.4rem; margin-bottom: 15px;">RMSSD (Root Mean Square of Successive Differences)</h4>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it means:</strong> The square root of the mean of the squared differences between consecutive heartbeats.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it measures:</strong> Short-term heart rate variability, specifically parasympathetic (rest-and-digest) nervous system activity. Measured in milliseconds (ms).</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">Why it matters:</strong> Indicates recovery readiness and stress levels. Higher RMSSD means better recovery capacity and stress resilience.</p>
+                        <p style="margin-bottom: 0; line-height: 1.8;"><strong style="color: var(--good);">Healthy targets:</strong> Excellent: >40 ms | Good: 30-40 ms | Fair: 20-30 ms | Poor: <20 ms</p>
+                    </div>
+
+                    <div style="background: rgba(96,165,250,0.08); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--cyan);">
+                        <h4 style="color: var(--cyan); font-size: 1.4rem; margin-bottom: 15px;">pNN50 (Percentage of Successive Intervals >50ms)</h4>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it means:</strong> The percentage of consecutive heartbeat intervals that differ by more than 50 milliseconds.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it measures:</strong> Parasympathetic nervous system activity and vagal tone (the calming part of your nervous system).</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">Why it matters:</strong> Higher values indicate better parasympathetic control and recovery capacity. Important for stress management and cardiovascular health.</p>
+                        <p style="margin-bottom: 0; line-height: 1.8;"><strong style="color: var(--good);">Healthy targets:</strong> Excellent: >20% | Good: 10-20% | Fair: 5-10% | Poor: <5%</p>
+                    </div>
+                </div>
+
+                <!-- CARDIAC FUNCTION -->
+                <div style="margin-bottom: 50px;">
+                    <h3 style="color: var(--purple); font-size: 1.8rem; margin-bottom: 30px; padding-bottom: 10px; border-bottom: 3px solid var(--purple);">🫀 Cardiac Function Metrics</h3>
+
+                    <div style="background: rgba(220,38,38,0.08); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--bad);">
+                        <h4 style="color: var(--bad); font-size: 1.4rem; margin-bottom: 15px;">Ejection Fraction (EF)</h4>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it means:</strong> The percentage of blood pumped out of your heart's left ventricle with each beat.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it measures:</strong> How efficiently your heart pumps blood. If your EF is 60%, your heart pumps out 60% of the blood in the left ventricle with each beat.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">Why it matters:</strong> Key indicator of heart muscle strength and pump function. Often affected by heart attacks, heart failure, or valve disease.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">How it's tested:</strong> Measured via echocardiogram (ultrasound of heart), cardiac MRI, or nuclear stress test.</p>
+                        <p style="margin-bottom: 0; line-height: 1.8;"><strong style="color: var(--good);">Healthy targets:</strong> Normal: 50-70% | Borderline: 41-49% | Reduced: 40% or below | Severely Reduced: <30%</p>
+                    </div>
+
+                    <div style="background: rgba(96,165,250,0.08); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--cyan);">
+                        <h4 style="color: var(--cyan); font-size: 1.4rem; margin-bottom: 15px;">Blood Pressure (BP)</h4>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it means:</strong> The force of blood pushing against artery walls as your heart pumps.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it measures:</strong> Two numbers - Systolic (top number): pressure when heart beats | Diastolic (bottom number): pressure when heart rests between beats. Measured in mmHg (millimeters of mercury).</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">Why it matters:</strong> High blood pressure strains your heart and blood vessels, increasing risk of heart attack, stroke, and heart failure. Critical to monitor after cardiac surgery.</p>
+                        <p style="margin-bottom: 0; line-height: 1.8;"><strong style="color: var(--good);">Healthy targets:</strong> Optimal: &lt;120/80 | Elevated: 120-129/&lt;80 | Stage 1 Hypertension: 130-139/80-89 | Stage 2: ≥140/90<br>
+                        <span style="color: var(--bad); font-weight: 600;">⚠️ Seek immediate care if >180/120</span></p>
+                    </div>
+                </div>
+
+                <!-- RESPIRATORY METRICS -->
+                <div style="margin-bottom: 50px;">
+                    <h3 style="color: var(--purple); font-size: 1.8rem; margin-bottom: 30px; padding-bottom: 10px; border-bottom: 3px solid var(--purple);">🫁 Respiratory Metrics</h3>
+
+                    <div style="background: rgba(96,165,250,0.08); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--cyan);">
+                        <h4 style="color: var(--cyan); font-size: 1.4rem; margin-bottom: 15px;">Oxygen Saturation (SpO2)</h4>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it means:</strong> The percentage of oxygen-carrying hemoglobin in your blood.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it measures:</strong> How well oxygen is being delivered to your body's tissues. Measured with a pulse oximeter (finger clip device).</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">Why it matters:</strong> Ensures your heart and lungs are effectively delivering oxygen. Important to monitor during exercise and recovery.</p>
+                        <p style="margin-bottom: 0; line-height: 1.8;"><strong style="color: var(--good);">Healthy targets:</strong> Normal: 95-100% | Concerning: <95% | Seek care: <90%</p>
+                    </div>
+
+                    <div style="background: rgba(96,165,250,0.08); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--cyan);">
+                        <h4 style="color: var(--cyan); font-size: 1.4rem; margin-bottom: 15px;">Respiratory Rate</h4>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it means:</strong> The number of breaths you take per minute while at rest.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it measures:</strong> Breathing frequency. Count breaths for 60 seconds while sitting quietly.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">Why it matters:</strong> Elevated respiratory rate can indicate heart failure, lung problems, or infection. Should be monitored during recovery.</p>
+                        <p style="margin-bottom: 0; line-height: 1.8;"><strong style="color: var(--good);">Healthy targets:</strong> Normal: 12-20 breaths/min | Concerning: >20 | Seek care: >24 or <10</p>
+                    </div>
+
+                    <div style="background: rgba(96,165,250,0.08); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--cyan);">
+                        <h4 style="color: var(--cyan); font-size: 1.4rem; margin-bottom: 15px;">Dyspnea (Shortness of Breath)</h4>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it means:</strong> The medical term for difficulty breathing or shortness of breath.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it measures:</strong> Your subjective rating of breathing difficulty on a 0-10 scale. Often uses the Borg Scale or similar rating systems.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">Why it matters:</strong> Common after cardiac surgery; tracking changes helps identify improvement or potential complications. Sudden worsening requires immediate medical attention.</p>
+                        <p style="margin-bottom: 0; line-height: 1.8;"><strong style="color: var(--good);">Score guide:</strong> 0 = No breathlessness | 1-3 = Mild | 4-6 = Moderate | 7-9 = Severe | 10 = Maximum/Unable to breathe<br>
+                        <span style="color: var(--bad); font-weight: 600;">⚠️ Seek immediate care if dyspnea is sudden, severe, or accompanied by chest pain</span></p>
+                    </div>
+                </div>
+
+                <!-- SYMPTOM METRICS -->
+                <div style="margin-bottom: 50px;">
+                    <h3 style="color: var(--purple); font-size: 1.8rem; margin-bottom: 30px; padding-bottom: 10px; border-bottom: 3px solid var(--purple);">🩺 Symptom Assessment Metrics</h3>
+
+                    <div style="background: rgba(96,165,250,0.08); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--cyan);">
+                        <h4 style="color: var(--cyan); font-size: 1.4rem; margin-bottom: 15px;">Edema (Swelling)</h4>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it means:</strong> Swelling caused by excess fluid trapped in body tissues, especially in feet, ankles, and legs.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it measures:</strong> Severity of fluid retention, rated 0-4. Press on swollen area for 5 seconds - if indent remains, that's "pitting edema."</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">Why it matters:</strong> Can indicate heart failure, medication effects, or circulation problems. Important warning sign to monitor after cardiac surgery.</p>
+                        <p style="margin-bottom: 0; line-height: 1.8;"><strong style="color: var(--good);">Score guide:</strong> 0 = No swelling | 1 = Mild (&lt;2mm indent) | 2 = Moderate (2-4mm) | 3 = Severe (4-6mm) | 4 = Very severe (6-8mm)</p>
+                    </div>
+
+                    <div style="background: rgba(96,165,250,0.08); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--cyan);">
+                        <h4 style="color: var(--cyan); font-size: 1.4rem; margin-bottom: 15px;">RPE (Rate of Perceived Exertion)</h4>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it means:</strong> How hard you feel your body is working during exercise. Also called the Borg Scale.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it measures:</strong> Your subjective feeling of effort, fatigue, and strain on a 1-10 scale (or sometimes 6-20 scale).</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">Why it matters:</strong> Simple way to monitor exercise intensity without equipment. During cardiac rehab, you'll typically aim for RPE 3-6 (moderate intensity).</p>
+                        <p style="margin-bottom: 0; line-height: 1.8;"><strong style="color: var(--good);">Score guide (0-10):</strong> 0 = No effort | 1-2 = Very light | 3-4 = Light | 5-6 = Moderate | 7-8 = Vigorous | 9-10 = Maximum effort</p>
+                    </div>
+                </div>
+
+                <!-- QUALITY OF LIFE -->
+                <div style="margin-bottom: 50px;">
+                    <h3 style="color: var(--purple); font-size: 1.8rem; margin-bottom: 30px; padding-bottom: 10px; border-bottom: 3px solid var(--purple);">😊 Quality of Life Metrics</h3>
+
+                    <div style="background: rgba(96,165,250,0.08); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--cyan);">
+                        <h4 style="color: var(--cyan); font-size: 1.4rem; margin-bottom: 15px;">Quality of Life Score</h4>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it means:</strong> An overall rating of your well-being, life satisfaction, and ability to do daily activities.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it measures:</strong> Combines physical, mental, emotional, and social aspects of health on a 0-100 scale.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">Why it matters:</strong> Recovery isn't just about physical metrics - mental and emotional health are equally important. Tracking QOL helps ensure holistic recovery.</p>
+                        <p style="margin-bottom: 0; line-height: 1.8;"><strong style="color: var(--good);">Score guide:</strong> Excellent: 80-100 | Good: 60-79 | Fair: 40-59 | Poor: 20-39 | Very Poor: 0-19</p>
+                    </div>
+
+                    <div style="background: rgba(96,165,250,0.08); padding: 25px; border-radius: 12px; margin-bottom: 25px; border-left: 5px solid var(--cyan);">
+                        <h4 style="color: var(--cyan); font-size: 1.4rem; margin-bottom: 15px;">Sleep Quality</h4>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it means:</strong> How well you slept the previous night, including sleep duration and restfulness.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">What it measures:</strong> Subjective sleep quality on a 0-10 scale, considering factors like sleep latency (time to fall asleep), awakenings, and feeling rested.</p>
+                        <p style="margin-bottom: 12px; line-height: 1.8;"><strong style="color: var(--accent);">Why it matters:</strong> Poor sleep impairs recovery, increases stress, affects heart health, and reduces exercise performance. Essential for healing after surgery.</p>
+                        <p style="margin-bottom: 0; line-height: 1.8;"><strong style="color: var(--good);">Score guide:</strong> Excellent: 8-10 | Good: 6-7 | Fair: 4-5 | Poor: 0-3<br>
+                        <span style="color: var(--muted); font-size: 0.95rem;">💡 Tip: Aim for 7-9 hours of sleep per night for optimal heart recovery</span></p>
+                    </div>
+                </div>
+
+                <!-- QUICK REFERENCE -->
+                <div style="background: linear-gradient(135deg, rgba(96,165,250,0.15), rgba(167,139,250,0.15)); padding: 30px; border-radius: 16px; border: 3px solid var(--accent);">
+                    <h3 style="color: var(--accent); font-size: 1.6rem; margin-bottom: 20px; text-align: center;">📋 Quick Reference: When to Contact Your Doctor</h3>
+                    <div style="display: grid; gap: 15px;">
+                        <div style="background: white; padding: 15px; border-radius: 8px; border-left: 5px solid var(--bad);">
+                            <strong style="color: var(--bad);">🚨 IMMEDIATE (Call 911):</strong> <span style="color: #1a1a1a; font-weight: 600;">Chest pain, severe shortness of breath, fainting, heart rate >150 or <40, blood pressure >180/120</span>
+                        </div>
+                        <div style="background: white; padding: 15px; border-radius: 8px; border-left: 5px solid orange;">
+                            <strong style="color: orange;">⚠️ URGENT (Contact doctor same day):</strong> <span style="color: #1a1a1a; font-weight: 600;">Sudden weight gain >3 lbs in 24h, worsening edema, chest pain score >3, dyspnea at rest, irregular heartbeat</span>
+                        </div>
+                        <div style="background: white; padding: 15px; border-radius: 8px; border-left: 5px solid var(--cyan);">
+                            <strong style="color: var(--cyan);">💡 ROUTINE (Discuss at next visit):</strong> <span style="color: #1a1a1a; font-weight: 600;">Gradual trends in metrics, questions about exercise progression, medication adjustments, quality of life concerns</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 40px; padding: 25px; background: rgba(167,139,250,0.1); border-radius: 12px; text-align: center;">
+                    <p style="font-size: 1.1rem; line-height: 1.8; color: var(--text); margin: 0;">
+                        <strong style="color: var(--purple);">Remember:</strong> These metrics are tools to track your progress and communicate with your healthcare team.
+                        Always follow your doctor's specific recommendations for your individual recovery plan. Every person's recovery journey is unique! 💜
+                    </p>
+                </div>
+            </div>
+        </div>
+        </main>
+    </div>
+
+    <div class="notification" id="notification" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- CLINICAL ALERT MODAL -->
+    <div class="alert-modal" id="alertModal">
+        <div class="alert-modal-content">
+            <div class="alert-icon">🚨</div>
+            <div class="alert-title">Medical Alert</div>
+            <div class="alert-message" id="alertMessage"></div>
+            <div class="alert-details" id="alertDetails"></div>
+            <div class="alert-buttons">
+                <button class="alert-btn-danger" onclick="acknowledgeAlert()">I Understand - Save Anyway</button>
+                <button class="alert-btn-secondary" onclick="closeAlert()">Cancel & Review Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER WITH COPYRIGHT AND TRADEMARK -->
+    <footer style="background: rgba(15, 23, 42, 0.95); border-top: 2px solid rgba(96, 165, 250, 0.2); padding: 30px 20px; margin-top: 60px; text-align: center; font-size: 0.85rem; color: var(--muted);">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <!-- Branding Section -->
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-bottom: 8px;">
+                    Cardiac Recovery Pro™
+                </div>
+                <div style="font-size: 0.75rem; opacity: 0.8;">
+                    Complete Recovery Tracking & Analytics System
+                </div>
+                <div style="font-size: 0.75rem; opacity: 0.8; margin-top: 4px;">
+                    Powered by our exclusive <span style="color: var(--accent); font-weight: 600;">PULSE</span> Technology™
+                </div>
+                <div style="font-size: 0.7rem; opacity: 0.7; font-style: italic;">
+                    Personal Universal Life Support Engine
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div style="height: 1px; background: rgba(96, 165, 250, 0.2); margin: 20px auto; max-width: 600px;"></div>
+
+            <!-- Legal Links Section -->
+            <div style="margin: 20px 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; font-size: 0.8rem;">
+                <a href="https://heartbeat-claude-code.vercel.app/disclosures.html#privacy-policy" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">Privacy Policy</a>
+                <span style="color: rgba(148, 163, 184, 0.3);">|</span>
+                <a href="https://heartbeat-claude-code.vercel.app/disclosures.html#terms-of-service" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">Terms of Service</a>
+                <span style="color: rgba(148, 163, 184, 0.3);">|</span>
+                <a href="https://heartbeat-claude-code.vercel.app/disclosures.html#contact" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">Contact Support</a>
+            </div>
+
+            <!-- Medical Disclaimer -->
+            <div style="margin: 20px auto; padding: 15px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; max-width: 800px; font-size: 0.75rem; line-height: 1.6;">
+                <div style="font-weight: 600; color: #fca5a5; margin-bottom: 8px;">⚕️ Medical Disclaimer</div>
+                <div style="color: #fca5a5; opacity: 0.9;">
+                    This application is for informational and fitness tracking purposes only. It is not intended to diagnose, treat, cure, or prevent any disease.
+                    Always consult with a qualified healthcare professional regarding any medical condition or treatment. In case of a medical emergency, call 911 immediately.
+                </div>
+            </div>
+
+            <!-- Copyright and Trademark -->
+            <div style="margin-top: 20px; font-size: 0.75rem; line-height: 1.8;">
+                <div style="margin-bottom: 8px;">
+                    © 2025 <span style="font-weight: 600; color: var(--accent);">Heartbeat Health Technologies</span>. All rights reserved.
+                </div>
+                <div style="opacity: 0.7;">
+                    Cardiac Recovery Pro™, PULSE Technology™, and associated logos are trademarks of Heartbeat Health Technologies.
+                </div>
+                <div style="opacity: 0.6; margin-top: 8px; font-size: 0.7rem;">
+                    Patents pending. Unauthorized reproduction or distribution is prohibited.
+                </div>
+            </div>
+
+            <!-- Version Info -->
+            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(96, 165, 250, 0.1); font-size: 0.7rem; opacity: 0.5;">
+                Version 1.0.0 | Built with ❤️ for cardiac recovery patients worldwide
+            </div>
+        </div>
+    </footer>
+

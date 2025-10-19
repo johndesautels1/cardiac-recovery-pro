@@ -1,0 +1,5 @@
+/* Main CSS - Imports all stylesheets */
+@import './variables.css';
+@import './components.css';
+
+/* Ensure Chart.js loads from CDN */
