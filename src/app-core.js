@@ -4078,6 +4078,7 @@ ${session.homeExerciseInstructions || 'No at-home instructions provided'}
             setTimeout(() => {
                 if (subtabId === 'performance') {
                     createMETsChart();
+                    createHRZoneChart();
                 }
             }, 100);
         }
@@ -4153,6 +4154,157 @@ ${session.homeExerciseInstructions || 'No at-home instructions provided'}
                 },
                 options: getChartOptions('METs')
             });
+        }
+
+        // CREATE HEART RATE ZONE CHART
+        function createHRZoneChart() {
+            const canvas = document.getElementById('hrZoneChart');
+            if (!canvas) return;
+
+            // Destroy existing chart if it exists
+            if (window.hrZoneChart) {
+                window.hrZoneChart.destroy();
+            }
+
+            // Calculate max HR (using age if available, otherwise default to 180)
+            const age = calculateAge(); // Will use from patient data if available
+            const maxHR = age ? (220 - age) : 180;
+
+            // Define HR zones
+            const zones = {
+                zone1: { min: Math.round(maxHR * 0.50), max: Math.round(maxHR * 0.60), color: 'rgba(156,163,175,0.2)', label: 'Zone 1' },
+                zone2: { min: Math.round(maxHR * 0.60), max: Math.round(maxHR * 0.70), color: 'rgba(59,130,246,0.2)', label: 'Zone 2' },
+                zone3: { min: Math.round(maxHR * 0.70), max: Math.round(maxHR * 0.80), color: 'rgba(34,197,94,0.2)', label: 'Zone 3' },
+                zone4: { min: Math.round(maxHR * 0.80), max: Math.round(maxHR * 0.90), color: 'rgba(245,158,11,0.2)', label: 'Zone 4' },
+                zone5: { min: Math.round(maxHR * 0.90), max: maxHR, color: 'rgba(239,68,68,0.2)', label: 'Zone 5' }
+            };
+
+            // Get heart rate data from saved sessions
+            const dates = Object.keys(allData).sort();
+            const hrData = [];
+
+            dates.forEach(date => {
+                const data = allData[date];
+                if (data.maxHeartRate) {
+                    hrData.push({
+                        date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                        hr: parseFloat(data.maxHeartRate)
+                    });
+                } else if (data.avgHeartRate) {
+                    hrData.push({
+                        date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                        hr: parseFloat(data.avgHeartRate)
+                    });
+                }
+            });
+
+            // If no data, show sample data across different zones
+            if (hrData.length === 0) {
+                hrData.push(
+                    { date: 'Week 1', hr: Math.round(maxHR * 0.55) },  // Zone 1
+                    { date: 'Week 2', hr: Math.round(maxHR * 0.65) },  // Zone 2
+                    { date: 'Week 3', hr: Math.round(maxHR * 0.72) },  // Zone 3
+                    { date: 'Week 4', hr: Math.round(maxHR * 0.68) },  // Zone 2
+                    { date: 'Week 5', hr: Math.round(maxHR * 0.75) },  // Zone 3
+                    { date: 'Week 6', hr: Math.round(maxHR * 0.78) }   // Zone 3
+                );
+            }
+
+            const ctx = canvas.getContext('2d');
+            window.hrZoneChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: hrData.map(d => d.date),
+                    datasets: [{
+                        label: 'Heart Rate During Exercise',
+                        data: hrData.map(d => d.hr),
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239,68,68,0.1)',
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#ef4444',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: { color: '#9ca3af', font: { size: 12 } }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const hr = context.parsed.y;
+                                    let zone = '';
+                                    if (hr >= zones.zone5.min) zone = 'Zone 5 (Maximum)';
+                                    else if (hr >= zones.zone4.min) zone = 'Zone 4 (Hard)';
+                                    else if (hr >= zones.zone3.min) zone = 'Zone 3 (Moderate)';
+                                    else if (hr >= zones.zone2.min) zone = 'Zone 2 (Light)';
+                                    else zone = 'Zone 1 (Very Light)';
+                                    return `HR: ${hr} bpm (${zone})`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: Math.round(maxHR * 0.45),
+                            max: maxHR + 10,
+                            ticks: { color: '#9ca3af' },
+                            grid: { color: 'rgba(156,163,175,0.1)' },
+                            title: {
+                                display: true,
+                                text: 'Heart Rate (bpm)',
+                                color: '#9ca3af'
+                            }
+                        },
+                        x: {
+                            ticks: { color: '#9ca3af' },
+                            grid: { color: 'rgba(156,163,175,0.1)' }
+                        }
+                    }
+                },
+                plugins: [{
+                    // Custom plugin to draw zone backgrounds
+                    beforeDraw: (chart) => {
+                        const ctx = chart.ctx;
+                        const chartArea = chart.chartArea;
+                        const yScale = chart.scales.y;
+
+                        // Draw each zone as a colored band
+                        Object.values(zones).forEach(zone => {
+                            const yTop = yScale.getPixelForValue(zone.max);
+                            const yBottom = yScale.getPixelForValue(zone.min);
+
+                            ctx.fillStyle = zone.color;
+                            ctx.fillRect(
+                                chartArea.left,
+                                yTop,
+                                chartArea.right - chartArea.left,
+                                yBottom - yTop
+                            );
+                        });
+                    }
+                }]
+            });
+        }
+
+        // Helper function to calculate age from surgery date or patient data
+        function calculateAge() {
+            // Try to get age from stored patient data
+            const todayData = allData[new Date().toISOString().split('T')[0]];
+            if (todayData && todayData.age) {
+                return parseInt(todayData.age);
+            }
+
+            // Default age for calculation if not available
+            return 55; // Typical cardiac patient age
         }
 
         // NOTIFICATIONS
