@@ -1997,7 +1997,13 @@
 
                 // Reset in-memory data
                 allData = {};
-                surgeryDate = null;
+                surgeryDateStr = null;
+
+                // Reset surgery date input field
+                const surgeryDateInput = document.getElementById('surgeryDate');
+                if (surgeryDateInput) {
+                    surgeryDateInput.value = '';
+                }
 
                 // Reset UI elements
                 document.getElementById('statsWeeks').textContent = '0';
