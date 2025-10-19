@@ -206,22 +206,22 @@
         .stat-value {
             font-size: 2.2rem;
             font-weight: 900;
-            background: linear-gradient(135deg, var(--cyan), var(--purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #ffffff !important;
             margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         /* Color coding for out-of-range values */
         .stat-value.slightly-out-of-range {
-            background: linear-gradient(135deg, #f59e0b, #fb923c) !important;
+            color: #f59e0b !important;
             font-weight: 700 !important;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
         }
 
         .stat-value.way-out-of-range {
-            background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+            color: #ef4444 !important;
             font-weight: 700 !important;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
         }
 
         .stat-value-avg.slightly-out-of-range {

@@ -1722,6 +1722,11 @@
                     const status = latest.sleepQuality >= 8 ? 'Excellent' : latest.sleepQuality >= 6 ? 'Good' : 'Poor';
                     document.getElementById('statsSleepTrend').textContent = status;
                 }
+
+                // CRPS Recovery Probability Score
+                if (latest.crpsScore !== undefined && latest.crpsBreakdown) {
+                    updateCRPSDisplay(latest.crpsBreakdown);
+                }
             } catch (error) {
                 console.error('Dashboard update error:', error);
                 // Fail silently for dashboard - non-critical display issue
@@ -2557,6 +2562,9 @@ ${session.homeExerciseInstructions || 'No at-home instructions provided'}
         function initializeCharts() {
             updateCharts();
             updatePopulationComparison();
+            // Initialize new Analytics subtab charts
+            createMETsChart();
+            createHRZoneChart();
         }
 
         function updateCharts() {
