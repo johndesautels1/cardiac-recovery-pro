@@ -1,4 +1,4 @@
-        // DATA STORAGE WITH ERROR HANDLING
+// DATA STORAGE WITH ERROR HANDLING
         let allData = {};
         let surgeryDateStr = null;
         let patientName = null; // Can be populated from master app data when unified
@@ -818,6 +818,7 @@
         function initializeCRPSTrendChart() {
             const ctx = document.getElementById('crpsTrendChart');
             if (!ctx) { console.warn("crpsTrendChart canvas not found"); return; }
+            console.log('📊 Initializing CRPS Trend Chart...');
 
             // Get CRPS scores for the last 90 days
             const today = new Date();
@@ -839,6 +840,7 @@
                     labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
                 }
             }
+            console.log('📈 CRPS data points collected:', crpsData.length);
 
             // Color code the points and segments
             const pointColors = crpsData.map(d => {
@@ -850,10 +852,11 @@
             });
 
             // Destroy existing chart if it exists
-            if (window.crpsTrendChart) {
+            if (window.crpsTrendChart && typeof window.crpsTrendChart.destroy === 'function') {
                 window.crpsTrendChart.destroy();
             }
 
+            console.log('✅ CRPS Trend Chart created successfully');
             // Create new chart
             window.crpsTrendChart = new Chart(ctx, {
                 type: 'line',
@@ -2633,6 +2636,12 @@ ${session.homeExerciseInstructions || 'No at-home instructions provided'}
             } catch (error) {
                 console.error('HR Zone chart init error:', error);
             }
+            try {
+                // Delay HR chart population to ensure canvas is available
+                setTimeout(() => populateHRChartFromDashboard(), 500);
+            } catch (error) {
+                console.error('HR chart init error:', error);
+            }
         }
 
         function updateCharts() {
@@ -3269,14 +3278,11 @@ ${session.homeExerciseInstructions || 'No at-home instructions provided'}
                 performanceLabel = 'Needs Attention';
             }
 
-            if (charts.radar) {
-                charts.radar.data.datasets[0].data = radarData.userScores;
-                charts.radar.data.datasets[0].backgroundColor = performanceColorRGBA;
-                charts.radar.data.datasets[0].borderColor = performanceColor;
-                charts.radar.data.datasets[0].label = `Your Performance (${performanceLabel})`;
-                charts.radar.update('none');
-            } else {
-                charts.radar = new Chart(canvas, {
+            // Always destroy and recreate to ensure colors update
+            if (charts.radar && typeof charts.radar.destroy === 'function') {
+                charts.radar.destroy();
+            }
+            charts.radar = new Chart(canvas, {
                     type: 'radar',
                     data: {
                         labels: ['VO2 Max', 'HR Recovery', 'Resting HR', 'HRV (SDNN)', 'Exercise Capacity', 'Recovery Speed'],
@@ -3340,7 +3346,6 @@ ${session.homeExerciseInstructions || 'No at-home instructions provided'}
                         }
                     }
                 });
-            }
         }
 
         // CALCULATE RISK STRATIFICATION FROM ACTUAL METRICS (5-LEVEL SYSTEM)
@@ -3511,7 +3516,7 @@ ${session.homeExerciseInstructions || 'No at-home instructions provided'}
                 return '#22c55e'; // Low - Green
             });
 
-            if (charts.risk) {
+            if (charts.risk && charts.risk.data && charts.risk.data.datasets && charts.risk.data.datasets[0]) {
                 charts.risk.data.labels = displayLabels;
                 charts.risk.data.datasets[0].data = sortedRiskValues;
                 charts.risk.data.datasets[0].backgroundColor = barColors;
@@ -4227,7 +4232,7 @@ ${session.homeExerciseInstructions || 'No at-home instructions provided'}
             const canvas = document.getElementById('metsProgressChart');
             if (!canvas) return;
 
-            // Destroy existing chart if it exists
+            if (window.metsChart && typeof window.metsChart.destroy === 'function') {
             if (window.metsChart) {
                 window.metsChart.destroy();
             }
@@ -4301,7 +4306,7 @@ ${session.homeExerciseInstructions || 'No at-home instructions provided'}
             if (!canvas) return;
 
             // Destroy existing chart if it exists
-            if (window.hrZoneChart) {
+            if (window.hrZoneChart && typeof window.hrZoneChart.destroy === 'function') {
                 window.hrZoneChart.destroy();
             }
 
@@ -5057,7 +5062,7 @@ ${session.homeExerciseInstructions || 'No at-home instructions provided'}
 
             const ctx = canvas.getContext('2d');
 
-            // Destroy existing chart if it exists
+            if (hrChart && typeof hrChart.destroy === 'function') {
             if (hrChart) {
                 hrChart.destroy();
             }
@@ -5143,6 +5148,74 @@ ${session.homeExerciseInstructions || 'No at-home instructions provided'}
             hrChart.data.labels = hrLabels;
             hrChart.data.datasets[0].data = hrData;
             hrChart.update('none'); // Update without animation for smooth real-time updates
+        }
+
+        // Populate HR chart with dashboard historical data
+        function populateHRChartFromDashboard() {
+            console.log('🔄 Attempting to populate HR chart from dashboard...');
+            
+            const canvas = document.getElementById('hrMonitorChart');
+            if (!canvas) {
+                console.warn('⚠️ HR chart canvas not found in DOM');
+                return;
+            }
+            console.log('✅ HR chart canvas found');
+            
+            if (!hrChart) {
+                console.log('📊 Initializing HR chart...');
+                initHRChart();
+            }
+            
+            if (!hrChart) {
+                console.warn('⚠️ HR chart initialization failed');
+                return;
+            }
+            console.log('✅ HR chart object exists');
+
+            const dates = Object.keys(allData).sort();
+            console.log('📅 Found', dates.length, 'total dates in allData');
+            
+            if (dates.length === 0) {
+                console.warn('⚠️ No data available to populate HR chart');
+                return;
+            }
+
+            // Get last 30 days of HR data
+            const recentDates = dates.slice(-30);
+            const labels = [];
+            const data = [];
+
+            recentDates.forEach(date => {
+                const entry = allData[date];
+                const label = new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                
+                // Prefer resting HR, fall back to max HR or avg HR
+                if (entry.restingHR) {
+                    labels.push(label);
+                    data.push(entry.restingHR);
+                } else if (entry.maxHR) {
+                    labels.push(label);
+                    data.push(entry.maxHR);
+                } else if (entry.avgHeartRate) {
+                    labels.push(label);
+                    data.push(entry.avgHeartRate);
+                }
+            });
+
+            console.log('💓 Collected', data.length, 'HR data points');
+
+            if (data.length === 0) {
+                console.warn('⚠️ No heart rate data found in entries');
+                return;
+            }
+
+            // Update chart
+            hrChart.data.labels = labels;
+            hrChart.data.datasets[0].data = data;
+            hrChart.data.datasets[0].label = 'Historical Heart Rate (Dashboard Data)';
+            hrChart.update('none');
+
+            console.log('✅ HR chart populated with', data.length, 'dashboard entries');
         }
 
         function updateHRStatistics() {
@@ -5506,7 +5579,7 @@ ${session.homeExerciseInstructions || 'No at-home instructions provided'}
         // ========================================================================
 
         // Swipe gestures for tab navigation (mobile only)
-        const tabOrder = ['dashboard', 'entry', 'sessions', 'analytics', 'videos', 'history', 'hrmonitor', 'education'];
+        const tabOrder = ['dashboard', 'entry', 'sessions', 'analytics', 'videos', 'history', 'hrmonitor', 'education', 'bluetooth', 'settings'];
         let swipeStartX = 0;
         let swipeStartTime = 0;
         const swipeThreshold = 80;
@@ -5575,6 +5648,8 @@ ${session.homeExerciseInstructions || 'No at-home instructions provided'}
         });
 
         console.log('✅ Performance optimizations loaded: Lazy loading, swipe gestures, debounced inputs');
+}
+}
 
 // ========================================================================
 // EXPOSE FUNCTIONS TO WINDOW FOR ONCLICK HANDLERS
@@ -5596,6 +5671,8 @@ window.toggleEditGoals = toggleEditGoals;
 window.saveCustomGoals = saveCustomGoals;
 window.cancelEditGoals = cancelEditGoals;
 window.setRecoveryDay1 = setRecoveryDay1;
+window.savePatientName = savePatientName;
+window.savePatientDemographics = savePatientDemographics;
 window.clearCurrentData = clearCurrentData;
 window.clearAllPatientData = clearAllPatientData;
 window.overrideTherapyData = overrideTherapyData;
@@ -5713,3 +5790,4 @@ function initializeBottomNav() {
 
 console.log('✅ All functions exposed to window for onclick handlers');
 // Cache bust Sun, Oct 19, 2025  2:01:19 AM
+
