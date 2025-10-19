@@ -817,7 +817,6 @@
          */
         function initializeCRPSTrendChart() {
             const ctx = document.getElementById('crpsTrendChart');
-            if (!ctx) return;
             if (!ctx) { console.warn("crpsTrendChart canvas not found"); return; }
 
             // Get CRPS scores for the last 90 days
@@ -1372,6 +1371,12 @@
                 }
             });
 
+            // Map spo2 to oxygenSat for consistency with rest of codebase
+            if (metrics.spo2 !== undefined) {
+                metrics.oxygenSat = metrics.spo2;
+                delete metrics.spo2;
+            }
+
             // Save daily notes
             const notes = document.getElementById('dailyNotes').value;
             if (notes.trim() !== '') {
@@ -1480,6 +1485,51 @@
         }
 
         // UPDATE DASHBOARD STATS
+        // Helper function to apply color coding for out-of-range values
+        function applyRangeColorCoding(metric, value, elementId, avgValue = null) {
+            const element = document.getElementById(elementId);
+            const avgElement = avgValue !== null ? document.getElementById(elementId + 'Avg') : null;
+
+            if (!element) return;
+
+            // Remove existing range classes
+            element.classList.remove('slightly-out-of-range', 'way-out-of-range');
+            if (avgElement) avgElement.classList.remove('slightly-out-of-range', 'way-out-of-range');
+
+            // Define normal ranges (slightly out = yellow, way out = red)
+            const ranges = {
+                restingHR: { optimal: [60, 100], slightlyOut: [50, 110], wayOut: [40, 120] },
+                bpSystolic: { optimal: [90, 120], slightlyOut: [85, 140], wayOut: [70, 160] },
+                bpDiastolic: { optimal: [60, 80], slightlyOut: [55, 90], wayOut: [40, 100] },
+                oxygenSat: { optimal: [95, 100], slightlyOut: [90, 94], wayOut: [0, 89] },
+                respRate: { optimal: [12, 20], slightlyOut: [10, 25], wayOut: [8, 30] },
+                ejectionFraction: { optimal: [50, 100], slightlyOut: [40, 49], wayOut: [0, 39] },
+                hrRecovery: { optimal: [12, 100], slightlyOut: [8, 11], wayOut: [0, 7] },
+                vo2Max: { optimal: [20, 100], slightlyOut: [15, 19], wayOut: [0, 14] },
+                maxHR: { optimal: [100, 180], slightlyOut: [90, 190], wayOut: [80, 200] }
+            };
+
+            if (!ranges[metric]) return;
+
+            const range = ranges[metric];
+
+            // Check if value is out of range
+            if (value < range.wayOut[0] || value > range.wayOut[1]) {
+                element.classList.add('way-out-of-range');
+            } else if (value < range.slightlyOut[0] || value > range.slightlyOut[1]) {
+                element.classList.add('slightly-out-of-range');
+            }
+
+            // Apply same logic to average if provided
+            if (avgElement && avgValue !== null) {
+                if (avgValue < range.wayOut[0] || avgValue > range.wayOut[1]) {
+                    avgElement.classList.add('way-out-of-range');
+                } else if (avgValue < range.slightlyOut[0] || avgValue > range.slightlyOut[1]) {
+                    avgElement.classList.add('slightly-out-of-range');
+                }
+            }
+        }
+
         function updateDashboard() {
             try {
                 const dates = Object.keys(allData).sort();
@@ -1495,6 +1545,7 @@
                     if (avg) document.getElementById('statsVO2Avg').textContent = avg.toFixed(1);
                     document.getElementById('statsVO2Date').textContent = `Last: ${latestDate}`;
                     document.getElementById('statsVO2Trend').textContent = '↑ Improving';
+                    applyRangeColorCoding('vo2Max', latest.vo2Max, 'statsVO2', avg);
                 }
                 // Resting HR
                 if (latest.restingHR) {
@@ -1503,6 +1554,7 @@
                     if (avg) document.getElementById('statsHRAvg').textContent = Math.round(avg);
                     document.getElementById('statsHRDate').textContent = `Last: ${latestDate}`;
                     document.getElementById('statsHRTrend').textContent = '↓ Improving';
+                    applyRangeColorCoding('restingHR', latest.restingHR, 'statsHR', avg);
                 }
                 // SDNN
                 if (latest.sdnn) {
@@ -1521,6 +1573,7 @@
                     document.getElementById('statsBPDate').textContent = `Last: ${latestDate}`;
                     const status = latest.bpSystolic < 120 && latest.bpDiastolic < 80 ? 'Optimal' : latest.bpSystolic < 130 ? 'Good' : 'Monitor';
                     document.getElementById('statsBPTrend').textContent = status;
+                    applyRangeColorCoding('bpSystolic', latest.bpSystolic, 'statsBP', avgSys);
                 }
                 // Max HR
                 if (latest.maxHR) {
@@ -1529,6 +1582,7 @@
                     if (avg) document.getElementById('statsMaxHRAvg').textContent = Math.round(avg);
                     document.getElementById('statsMaxHRDate').textContent = `Last: ${latestDate}`;
                     document.getElementById('statsMaxHRTrend').textContent = 'Recorded';
+                    applyRangeColorCoding('maxHR', latest.maxHR, 'statsMaxHR', avg);
                 }
                 // HR Recovery
                 if (latest.hrRecovery) {
@@ -1538,6 +1592,7 @@
                     document.getElementById('statsHRRecoveryDate').textContent = `Last: ${latestDate}`;
                     const status = latest.hrRecovery > 25 ? 'Excellent' : latest.hrRecovery > 20 ? 'Good' : 'Improving';
                     document.getElementById('statsHRRecoveryTrend').textContent = status;
+                    applyRangeColorCoding('hrRecovery', latest.hrRecovery, 'statsHRRecovery', avg);
                 }
                 // RMSSD
                 if (latest.rmssd) {
@@ -1583,6 +1638,7 @@
                     document.getElementById('statsEFDate').textContent = `Last: ${latestDate}`;
                     const status = latest.ejectionFraction >= 50 ? 'Normal' : latest.ejectionFraction >= 40 ? 'Borderline' : 'Reduced';
                     document.getElementById('statsEFTrend').textContent = status;
+                    applyRangeColorCoding('ejectionFraction', latest.ejectionFraction, 'statsEF', avg);
                 }
                 // Oxygen Saturation
                 if (latest.oxygenSat) {
@@ -1592,6 +1648,7 @@
                     document.getElementById('statsSpO2Date').textContent = `Last: ${latestDate}`;
                     const status = latest.oxygenSat >= 95 ? 'Normal' : latest.oxygenSat >= 90 ? 'Monitor' : 'Low';
                     document.getElementById('statsSpO2Trend').textContent = status;
+                    applyRangeColorCoding('oxygenSat', latest.oxygenSat, 'statsSpO2', avg);
                 }
                 // Respiratory Rate
                 if (latest.respRate) {
@@ -1601,6 +1658,7 @@
                     document.getElementById('statsRespRateDate').textContent = `Last: ${latestDate}`;
                     const status = latest.respRate >= 12 && latest.respRate <= 20 ? 'Normal' : 'Monitor';
                     document.getElementById('statsRespRateTrend').textContent = status;
+                    applyRangeColorCoding('respRate', latest.respRate, 'statsRespRate', avg);
                 }
                 // Weight
                 if (latest.weight) {
@@ -3304,9 +3362,8 @@ ${session.homeExerciseInstructions || 'No at-home instructions provided'}
         }
 
         function updateRiskChart() {
-            if (!canvas) { console.warn("riskChart canvas not found"); return; }
             const canvas = document.getElementById('riskChart');
-            if (!canvas) return;
+            if (!canvas) { console.warn("riskChart canvas not found"); return; }
 
             const riskData = calculateRiskByDate();
 
@@ -4079,6 +4136,12 @@ ${session.homeExerciseInstructions || 'No at-home instructions provided'}
                 if (subtabId === 'performance') {
                     createMETsChart();
                     createHRZoneChart();
+                } else if (subtabId === 'cardiovascular') {
+                    initializeCRPSTrendChart();
+                } else if (subtabId === 'multiMetric') {
+                    if (typeof updateRadarChart === 'function') updateRadarChart();
+                    if (typeof updateRiskChart === 'function') updateRiskChart();
+                    if (typeof updateRecoveryProgressChart === 'function') updateRecoveryProgressChart();
                 }
             }, 100);
         }
