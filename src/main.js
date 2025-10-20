@@ -2,6 +2,7 @@
 // Importing all styles
 import './styles/main.css';
 import './styles/print.css';
+import './styles/mobile-responsive.css';
 
 console.log('🚀 Cardiac Recovery Pro - Initializing...');
 
