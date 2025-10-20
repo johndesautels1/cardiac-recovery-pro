@@ -24,10 +24,11 @@ import { initializeApp } from './app-loader.js';
     await import('./utils/backup-restore.js');
     await import('./utils/symptoms-logger.js');
     await import('./utils/emergency-alerts.js');
+    await import('./utils/pwa-install.js');
     await import('./utils/data-validation.js');
 
     console.log('✅ Cardiac Recovery Pro fully loaded!');
-    console.log('✅ All utility modules loaded: GPS, Backup, Symptoms, Alerts, Validation');
+    console.log('✅ All utility modules loaded: GPS, Backup, Symptoms, Alerts, Validation, PWA');
 
     // Register Service Worker for PWA offline support
     if ('serviceWorker' in navigator) {
