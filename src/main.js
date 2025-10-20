@@ -1,6 +1,7 @@
 // CARDIAC RECOVERY PRO - Fast Launch Version
 // Importing all styles
 import './styles/main.css';
+import './styles/print.css';
 
 console.log('🚀 Cardiac Recovery Pro - Initializing...');
 
