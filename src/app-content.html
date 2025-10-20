@@ -654,9 +654,20 @@
                 <h2>📝 Enter Metrics for <span id="entryDate"></span></h2>
 
                 <!-- SAVE / CLEAR BUTTONS AT TOP -->
-                <div style="display: flex; gap: 15px; margin: 20px 0; padding: 15px; background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(96,165,250,0.1)); border-radius: 12px; border: 2px solid var(--accent);">
-                    <button class="btn-good" onclick="saveMetrics()" style="flex: 1; font-size: 1.1rem; padding: 16px;">💾 SAVE ALL METRICS</button>
-                    <button class="btn-danger" onclick="clearForm()" style="flex: 1; font-size: 1.1rem; padding: 16px;">🗑️ CLEAR FORM</button>
+                <div style="display: flex; gap: 15px; margin: 20px 0; padding: 15px; background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(96,165,250,0.1)); border-radius: 12px; border: 2px solid var(--accent); flex-wrap: wrap;">
+                    <button class="btn-good" onclick="saveMetrics()" style="flex: 1; font-size: 1.1rem; padding: 16px; min-width: 200px;">💾 SAVE ALL METRICS</button>
+                    <button class="btn-danger" onclick="clearForm()" style="flex: 1; font-size: 1.1rem; padding: 16px; min-width: 200px;">🗑️ CLEAR FORM</button>
+                    <button class="btn" onclick="captureLocation()" id="gpsButton" style="flex: 1; font-size: 1.1rem; padding: 16px; min-width: 200px; background: linear-gradient(135deg, var(--cyan), var(--accent)); color: white; font-weight: 700;">📍 GET LOCATION</button>
+                </div>
+
+                <!-- GPS LOCATION DISPLAY -->
+                <div id="locationDisplay" style="display: none; margin: 10px 0 20px 0; padding: 15px; background: rgba(96,165,250,0.1); border-left: 4px solid var(--cyan); border-radius: 8px;">
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <span style="font-weight: 600; color: var(--cyan);">📍 Location Captured:</span>
+                        <span id="locationLabel" style="color: var(--text);"></span>
+                        <a id="locationMapLink" href="#" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: none; font-size: 0.9rem;">🗺️ View on Map</a>
+                        <button onclick="clearLocation()" style="padding: 4px 12px; font-size: 0.85rem; background: var(--danger); color: white; border: none; border-radius: 4px; cursor: pointer;">✖ Clear</button>
+                    </div>
                 </div>
 
                 <!-- HISTORICAL DATA ENTRY MODE -->
@@ -1569,11 +1580,12 @@
                                 <th>Edema</th>
                                 <th>QOL</th>
                                 <th>Sleep</th>
+                                <th>Location</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="historyBody">
-                            <tr><td colspan="24" style="text-align: center; color: var(--muted);">No data recorded yet</td></tr>
+                            <tr><td colspan="25" style="text-align: center; color: var(--muted);">No data recorded yet</td></tr>
                         </tbody>
                     </table>
                 </div>
