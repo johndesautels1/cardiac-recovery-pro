@@ -5940,3 +5940,17 @@ return '-';
 }
 
 console.log('✅ Location helper function loaded');
+// Fix for missing navigateDate function
+window.navigateDate = function(offset) {
+  const dateDisplay = document.getElementById("dateDisplay");
+  if (!dateDisplay) return;
+
+  const currentDate = new Date(dateDisplay.textContent);
+  if (isNaN(currentDate)) return;
+
+  currentDate.setDate(currentDate.getDate() + offset);
+  dateDisplay.textContent = currentDate.toDateString();
+
+  // Optional: trigger any other updates here
+  console.log("Date navigated to:", currentDate);
+};
