@@ -111,19 +111,23 @@ function init() {
 
     // Bind handlers directly to avoid relying on global name lookups
     try {
-         param($m) return "const userPhoto = document.getElementById('userPhoto');"+"`n        if (userPhoto) { try { userPhoto.textContent=''; } catch(e){}" 
+        const userPhoto = document.getElementById('userPhoto');
+        if (userPhoto) {
+            try { userPhoto.textContent = ''; } catch(e){}
             userPhoto.onclick = function() { if (typeof uploadUserPhoto === 'function') uploadUserPhoto(); };
             userPhoto.oncontextmenu = function(e) { e.preventDefault(); if (typeof removeUserPhoto === 'function') removeUserPhoto(); return false; };
         }
         const gpsButton = document.getElementById('gpsButton');
         if (gpsButton) {
-            gpsButton.addEventListener('click', function(e){ if (typeof captureLocation === 'function') captureLocation(); });
+            gpsButton.addEventListener('click', function(){ if (typeof captureLocation === 'function') captureLocation(); });
         }
         // Historical controls decoupled from GPS
         const histToggle = document.getElementById('historicalModeToggle');
         if (histToggle) histToggle.addEventListener('change', () => { try { toggleHistoricalMode(); } catch(e){} });
         const histDate = document.getElementById('historicalDate');
         if (histDate) histDate.addEventListener('change', () => { try { updateHistoricalDate(); } catch(e){} });
+        const day1Btn = document.getElementById('setDay1Btn');
+        if (day1Btn) day1Btn.addEventListener('click', () => { try { setRecoveryDay1(); } catch(e){} });
     } catch(e) { /* non-fatal */ }
 }
 
@@ -140,9 +144,20 @@ function navigateDate(days) {
     }
 }
 
- param($m) $body=$m.Groups[1].Value; $body2 = $body + "`n    try { const b=document.getElementById('historicalBadge'); if (b) b.style.display = (typeof isHistoricalMode!=='undefined' && isHistoricalMode) ? 'inline-block':'none'; } catch(e){}"; return "function updateDateDisplay() {"+$body2+"}`n" );
-    document.getElementById('entryDate').textContent = dateStr;
-    document.getElementById('datePicker').value = dateStr;
+function updateDateDisplay() {
+    const dateStr = currentDate.toISOString().split('T')[0];
+    const currentDateEl = document.getElementById('currentDate');
+    if (currentDateEl) {
+        currentDateEl.textContent = currentDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    }
+    const entryDateEl = document.getElementById('entryDate');
+    if (entryDateEl) entryDateEl.textContent = dateStr;
+    const picker = document.getElementById('datePicker');
+    if (picker) picker.value = dateStr;
+    try {
+        const badge = document.getElementById('historicalBadge');
+        if (badge) badge.style.display = (typeof isHistoricalMode !== 'undefined' && isHistoricalMode) ? 'inline-block' : 'none';
+    } catch(e){}
     loadDataForDate(dateStr);
 }
 
@@ -1391,15 +1406,35 @@ function acknowledgeAlert() {
 let isHistoricalMode = false;
 let historicalDate = null;
 
- param($m) $body=$m.Groups[1].Value; $extra="`n    try { const b=document.getElementById('historicalBadge'); if (b) b.style.display = isHistoricalMode ? 'inline-block':'none'; } catch(e){}"; return "function toggleHistoricalMode() {"+$body+$extra+"}`n"  else {
-        picker.style.display = 'none';
+function toggleHistoricalMode() {
+    const toggle = document.getElementById('historicalModeToggle');
+    const picker = document.getElementById('historicalDatePicker');
+    isHistoricalMode = toggle && toggle.checked;
+    if (isHistoricalMode) {
+        if (picker) picker.style.display = 'block';
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        const histInput = document.getElementById('historicalDate');
+        if (histInput) {
+            histInput.value = sixMonthsAgo.toISOString().split('T')[0];
+            updateHistoricalDate();
+        }
+    } else {
+        if (picker) picker.style.display = 'none';
         historicalDate = null;
-        // Reset to current date
-        document.getElementById('entryDate').textContent = currentDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        const entryDateEl = document.getElementById('entryDate');
+        if (entryDateEl) entryDateEl.textContent = currentDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     }
+    try { const b=document.getElementById('historicalBadge'); if (b) b.style.display = isHistoricalMode ? 'inline-block':'none'; } catch(e){}
 }
 
- param($m) $body=$m.Groups[1].Value; $extra="`n    try { const b=document.getElementById('historicalBadge'); if (b) { b.style.display='inline-block'; b.textContent='Historical: '+ new Date(dateInput.value+'T00:00:00').toLocaleDateString('en-US'); } } catch(e){}"; return "function updateHistoricalDate() {"+$body+$extra+"}`n" ) + ' (Historical)';
+function updateHistoricalDate() {
+    const dateInput = document.getElementById('historicalDate');
+    if (dateInput && dateInput.value) {
+        historicalDate = new Date(dateInput.value + 'T00:00:00');
+        const entryDateEl = document.getElementById('entryDate');
+        if (entryDateEl) entryDateEl.textContent = historicalDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + ' (Historical)';
+        try { const b=document.getElementById('historicalBadge'); if (b) { b.style.display='inline-block'; b.textContent='Historical: ' + new Date(dateInput.value+'T00:00:00').toLocaleDateString('en-US'); } } catch(e){}
     }
 }
 

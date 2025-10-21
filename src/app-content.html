@@ -83,7 +83,7 @@
                     <label for="surgeryDate" style="color: var(--purple); font-weight: 700; margin-bottom: 8px; display: block;">Surgery Date:</label>
                     <input type="date" id="surgeryDate" aria-label="Surgery date" aria-describedby="baseline-heading" style="padding: 14px; border-radius: 8px; border: 3px solid var(--purple); font-size: 1.1rem; font-weight: 600; background: white; color: #1a1a1a; width: 100%;">
                 </div>
-                <button class="btn-good" onclick="setRecoveryDay1()" aria-label="Set surgery date as recovery day 1">✓ Set as Day 1</button>
+                <button id="setDay1Btn" class="btn-good" onclick="setRecoveryDay1()" aria-label="Set surgery date as recovery day 1">✓ Set as Day 1</button>
             </div>
 
             <!-- Patient Demographics for CRPS Calculation -->
@@ -2168,6 +2168,7 @@
             </div>
         </div>
     </footer>
+
 
 
 
