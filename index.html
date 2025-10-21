@@ -11,9 +11,10 @@
     <title>Cardiac Recovery Pro</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" type="image/svg+xml" href="/icons/heart.svg">
-
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script type="module" crossorigin src="/assets/index-VBuAoT0f.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-q5dbs_mD.css">
 </head>
 <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -22,13 +23,10 @@
         <span id="themeIcon">🌙</span>
         <span id="themeText">Dark</span>
     </button>
-
     <div id="pullToRefresh" class="pull-to-refresh">
         <span id="refreshIcon">↓</span>
     </div>
-
     <div id="app" class="container"></div>
-
     <div id="installPrompt" class="install-prompt">
         <div class="install-prompt-content">
             <div class="install-prompt-title">📱 Install Cardiac Recovery Pro</div>
@@ -39,9 +37,37 @@
             <button class="dismiss-btn" id="dismissInstallBtn">Not Now</button>
         </div>
     </div>
-
     <nav class="bottom-nav" id="bottomNav" role="navigation"></nav>
-
-    <script type="module" src="/src/main.js"></script>
+    
+    <!-- Fix for switchTab function -->
+    <script>
+        window.switchTab = function(tabId) {
+            // Hide all tab content
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+                el.style.display = 'none';
+            });
+            
+            // Show active tab
+            const activeTab = document.getElementById(tabId);
+            if (activeTab) {
+                activeTab.classList.add('active');
+                activeTab.style.display = 'block';
+            }
+            
+            // Update button states
+            document.querySelectorAll('.bottom-nav-item, .tab-button').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Activate bottom nav button
+            const bottomNav = document.getElementById('bottomNav-' + tabId);
+            if (bottomNav) bottomNav.classList.add('active');
+            
+            // Activate tab button
+            const tabBtn = document.getElementById('tab-' + tabId);
+            if (tabBtn) tabBtn.classList.add('active');
+        };
+    </script>
 </body>
 </html>
