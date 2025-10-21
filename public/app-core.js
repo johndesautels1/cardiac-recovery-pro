@@ -111,8 +111,7 @@ function init() {
 
     // Bind handlers directly to avoid relying on global name lookups
     try {
-        const userPhoto = document.getElementById('userPhoto');
-        if (userPhoto) {
+         param($m) return "const userPhoto = document.getElementById('userPhoto');"+"`n        if (userPhoto) { try { userPhoto.textContent=''; } catch(e){}" 
             userPhoto.onclick = function() { if (typeof uploadUserPhoto === 'function') uploadUserPhoto(); };
             userPhoto.oncontextmenu = function(e) { e.preventDefault(); if (typeof removeUserPhoto === 'function') removeUserPhoto(); return false; };
         }
@@ -141,10 +140,7 @@ function navigateDate(days) {
     }
 }
 
-function updateDateDisplay() {
-    const dateStr = currentDate.toISOString().split('T')[0];
-    document.getElementById('currentDate').textContent =
-        currentDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+ param($m) $body=$m.Groups[1].Value; $body2 = $body + "`n    try { const b=document.getElementById('historicalBadge'); if (b) b.style.display = (typeof isHistoricalMode!=='undefined' && isHistoricalMode) ? 'inline-block':'none'; } catch(e){}"; return "function updateDateDisplay() {"+$body2+"}`n" );
     document.getElementById('entryDate').textContent = dateStr;
     document.getElementById('datePicker').value = dateStr;
     loadDataForDate(dateStr);
@@ -1395,19 +1391,7 @@ function acknowledgeAlert() {
 let isHistoricalMode = false;
 let historicalDate = null;
 
-function toggleHistoricalMode() {
-    const toggle = document.getElementById('historicalModeToggle');
-    const picker = document.getElementById('historicalDatePicker');
-    isHistoricalMode = toggle.checked;
-
-    if (isHistoricalMode) {
-        picker.style.display = 'block';
-        // Set default historical date to 6 months ago
-        const sixMonthsAgo = new Date();
-        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-        document.getElementById('historicalDate').value = sixMonthsAgo.toISOString().split('T')[0];
-        updateHistoricalDate();
-    } else {
+ param($m) $body=$m.Groups[1].Value; $extra="`n    try { const b=document.getElementById('historicalBadge'); if (b) b.style.display = isHistoricalMode ? 'inline-block':'none'; } catch(e){}"; return "function toggleHistoricalMode() {"+$body+$extra+"}`n"  else {
         picker.style.display = 'none';
         historicalDate = null;
         // Reset to current date
@@ -1415,11 +1399,7 @@ function toggleHistoricalMode() {
     }
 }
 
-function updateHistoricalDate() {
-    const dateInput = document.getElementById('historicalDate');
-    if (dateInput.value) {
-        historicalDate = new Date(dateInput.value + 'T00:00:00');
-        document.getElementById('entryDate').textContent = historicalDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + ' (Historical)';
+ param($m) $body=$m.Groups[1].Value; $extra="`n    try { const b=document.getElementById('historicalBadge'); if (b) { b.style.display='inline-block'; b.textContent='Historical: '+ new Date(dateInput.value+'T00:00:00').toLocaleDateString('en-US'); } } catch(e){}"; return "function updateHistoricalDate() {"+$body+$extra+"}`n" ) + ' (Historical)';
     }
 }
 
@@ -6072,5 +6052,9 @@ window.toggleAllMetrics = toggleAllMetrics;
 console.log('✅ All functions exposed to window for onclick handlers');
 
 }}
+
+
+
+
 
 
