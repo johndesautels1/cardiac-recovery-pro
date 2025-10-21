@@ -35,9 +35,12 @@
     </div>
     <nav class="bottom-nav" id="bottomNav" role="navigation"></nav>
     
-    <script type="module" src="/src/main.js"></script>
-    
     <script>
+    // ULTRA-CRITICAL: Define ALL functions BEFORE any modules load
+    // This prevents "undefined" errors while modules are loading
+    // CRITICAL: These functions must be available before modules load
+    // They are called from onclick handlers in HTML
+
     window.switchTab = function(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => {
             el.classList.remove('active');
@@ -54,6 +57,98 @@
         const tabBtn = document.getElementById('tab-' + tabId);
         if (tabBtn) tabBtn.classList.add('active');
     };
+
+    window.switchAnalyticsSubtab = function(subtabId) {
+        document.querySelectorAll('.analytics-subtab').forEach(subtab => {
+            subtab.style.display = 'none';
+            subtab.classList.remove('active');
+        });
+        const activeSubtab = document.getElementById('analytics-' + subtabId);
+        if (activeSubtab) {
+            activeSubtab.style.display = 'block';
+            activeSubtab.classList.add('active');
+        }
+        document.querySelectorAll('.analytics-subtab-btn').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.getElementById('subtab-btn-' + subtabId);
+        if (activeBtn) activeBtn.classList.add('active');
+    };
+
+    window.navigateDate = function(days) {
+        console.log('Calendar navigation clicked:', days, 'days');
+        // Function will be overridden by app-core.js when it loads
+        // This is just a placeholder to prevent errors
+    };
+
+    window.saveMetrics = function() {
+        console.log('Save metrics clicked - waiting for app-core.js to load');
+        // Function will be overridden by app-core.js when it loads
+    };
+
+    window.toggleHistoricalMode = function() {
+        console.log('Historical mode toggled - waiting for app-core.js to load');
+        // Function will be overridden by app-core.js when it loads
+    };
+
+    window.updateHistoricalDate = function() {
+        console.log('Historical date updated - waiting for app-core.js to load');
+        // Function will be overridden by app-core.js when it loads
+    };
+
+    window.toggleTheme = function() {
+        document.body.classList.toggle('light-mode');
+        const icon = document.getElementById('themeIcon');
+        const text = document.getElementById('themeText');
+        if (document.body.classList.contains('light-mode')) {
+            if (icon) icon.textContent = '☀️';
+            if (text) text.textContent = 'Light';
+            localStorage.setItem('theme', 'light');
+        } else {
+            if (icon) icon.textContent = '🌙';
+            if (text) text.textContent = 'Dark';
+            localStorage.setItem('theme', 'dark');
+        }
+    };
+
+    // Additional placeholders for functions called before app-core.js loads
+    window.showNotification = function(message, type) {
+        console.log(`[${type}] ${message}`);
+    };
+
+    window.clearForm = function() {
+        console.log('Clear form clicked - waiting for app-core.js');
+    };
+
+    window.savePatientName = function() {
+        console.log('Save patient name - waiting for app-core.js');
+    };
+
+    window.savePatientDemographics = function() {
+        console.log('Save patient demographics - waiting for app-core.js');
+    };
+
+    window.setRecoveryDay1 = function() {
+        console.log('Set recovery day 1 - waiting for app-core.js');
+    };
+
+    window.captureLocation = function() {
+        console.log('Capture location - waiting for app-core.js and GPS module');
+    };
+
+    window.clearLocation = function() {
+        console.log('Clear location - waiting for app-core.js');
+    };
+
+    window.clearCurrentData = function() {
+        console.log('Clear current data - waiting for app-core.js');
+    };
+
+    window.clearAllPatientData = function() {
+        console.log('Clear all patient data - waiting for app-core.js');
+    };
+
+    console.log('✅ Critical functions pre-loaded in index.html');
     </script>
+
+    <script type="module" src="/src/main.js"></script>
 </body>
 </html>

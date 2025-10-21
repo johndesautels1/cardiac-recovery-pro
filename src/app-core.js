@@ -5686,16 +5686,26 @@ console.log('✅ Performance optimizations loaded: Lazy loading, swipe gestures,
 // EXPOSE FUNCTIONS TO WINDOW FOR ONCLICK HANDLERS
 // ========================================================================
 // Make all onclick handler functions globally available
+console.log('🔧 Exposing functions to window object...');
+
+// Core UI functions
+window.showNotification = showNotification;
 window.switchTab = switchTab;
 window.switchAnalyticsSubtab = switchAnalyticsSubtab;
 window.navigateDate = navigateDate;
+
+// Data functions
 window.saveMetrics = saveMetrics;
 window.saveTherapySession = saveTherapySession;
 window.clearForm = clearForm;
 window.toggleHistoricalMode = toggleHistoricalMode;
 window.updateHistoricalDate = updateHistoricalDate;
+
+// Exercise functions
 window.showExerciseSuggestions = showExerciseSuggestions;
 window.selectExercise = selectExercise;
+
+// Settings functions
 window.toggleTheme = toggleTheme;
 window.clearSessionForm = clearSessionForm;
 window.toggleEditGoals = toggleEditGoals;
@@ -5704,9 +5714,25 @@ window.cancelEditGoals = cancelEditGoals;
 window.setRecoveryDay1 = setRecoveryDay1;
 window.savePatientName = savePatientName;
 window.savePatientDemographics = savePatientDemographics;
+
+// Data management functions
 window.clearCurrentData = clearCurrentData;
 window.clearAllPatientData = clearAllPatientData;
 window.overrideTherapyData = overrideTherapyData;
+
+console.log('✅ Functions exposed to window:', {
+    navigateDate: typeof window.navigateDate,
+    saveMetrics: typeof window.saveMetrics,
+    toggleHistoricalMode: typeof window.toggleHistoricalMode,
+    switchTab: typeof window.switchTab
+});
+
+// VERIFY the real functions are loaded by testing them
+console.log('🧪 TESTING if placeholders were overridden:');
+console.log('  navigateDate includes "placeholder"?', window.navigateDate.toString().includes('placeholder'));
+console.log('  navigateDate includes "updateDateDisplay"?', window.navigateDate.toString().includes('updateDateDisplay'));
+console.log('  toggleHistoricalMode includes "placeholder"?', window.toggleHistoricalMode.toString().includes('placeholder'));
+console.log('  toggleHistoricalMode includes "historicalModeToggle"?', window.toggleHistoricalMode.toString().includes('historicalModeToggle') || window.toggleHistoricalMode.toString().includes('isHistoricalMode'));
 window.connectPolarH10 = connectPolarH10;
 window.connectSamsungWatch = connectSamsungWatch;
 window.disconnectDevice = disconnectDevice;
@@ -5971,3 +5997,15 @@ return '-';
 }
 
 console.log('✅ Location helper function loaded');
+
+// ============================================================================
+// APP-CORE.JS FULLY LOADED
+// ============================================================================
+console.log('🎉 APP-CORE.JS FULLY LOADED - All functions should be available now');
+console.log('📊 Testing critical functions:', {
+    navigateDate: typeof window.navigateDate,
+    saveMetrics: typeof window.saveMetrics,
+    toggleHistoricalMode: typeof window.toggleHistoricalMode,
+    updateHistoricalDate: typeof window.updateHistoricalDate,
+    showNotification: typeof window.showNotification
+});
