@@ -54,7 +54,7 @@ import { initializeApp } from './app-loader.js';
     console.log('✅ All utility modules loaded: GPS, Backup, Symptoms, Alerts, Validation, PWA, Protocol, Milestones, ChartValidator');
 
     // Register Service Worker for PWA offline support
-    if ('serviceWorker' in navigator) {
+    if (false && 'serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js')
         .then((registration) => {
           console.log('✅ Service Worker registered:', registration.scope);
@@ -67,3 +67,4 @@ import { initializeApp } from './app-loader.js';
     console.error('❌ Failed to initialize app');
   }
 })();
+
