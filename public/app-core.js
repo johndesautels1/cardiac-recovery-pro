@@ -5,6 +5,43 @@ let patientName = null; // Can be populated from master app data when unified
 let currentDate = new Date();
 let storageAvailable = true;
 
+// Lightweight toast notifications (overrides index placeholder)
+(() => {
+    function ensureToastContainer() {
+        let c = document.getElementById('toastContainer');
+        if (!c) {
+            c = document.createElement('div');
+            c.id = 'toastContainer';
+            c.style.position = 'fixed';
+            c.style.top = '16px';
+            c.style.right = '16px';
+            c.style.zIndex = '10000';
+            c.style.display = 'flex';
+            c.style.flexDirection = 'column';
+            c.style.gap = '8px';
+            document.body.appendChild(c);
+        }
+        return c;
+    }
+    function showToast(msg, type) {
+        const c = ensureToastContainer();
+        const t = document.createElement('div');
+        t.textContent = msg;
+        t.style.padding = '10px 14px';
+        t.style.borderRadius = '8px';
+        t.style.boxShadow = '0 6px 20px rgba(0,0,0,0.25)';
+        t.style.color = '#fff';
+        t.style.fontWeight = '600';
+        t.style.fontFamily = 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+        if (type === 'error') t.style.background = '#ef4444';
+        else if (type === 'success') t.style.background = '#22c55e';
+        else t.style.background = '#3b82f6';
+        c.appendChild(t);
+        setTimeout(() => { try { c.removeChild(t); } catch(e){} }, 2500);
+    }
+    window.showNotification = (message, type='info') => { showToast(String(message), type); };
+})();
+
 // Safely load data from localStorage
 try {
     const storedData = localStorage.getItem('cardiacRecoveryData');
@@ -43,6 +80,13 @@ function init() {
     attachValidationListeners();
     initSwipeGestures();
     initializeBottomNav(); // Initialize mobile bottom navigation
+    // Ensure GPS UI starts in a ready state
+    try {
+        const gpsBtn = document.getElementById('gpsButton');
+        if (gpsBtn) { gpsBtn.disabled = false; gpsBtn.innerHTML = 'GET LOCATION'; }
+        const locDisp = document.getElementById('locationDisplay');
+        if (locDisp) locDisp.style.display = 'none';
+    } catch(e) { /* non-fatal */ }
 }
 
 // DATE NAVIGATION
@@ -2652,7 +2696,7 @@ function initializeCharts() {
         console.error('METs chart init error:', error);
     }
     try {
-        createHRZoneChart();
+        if (typeof createHRZoneChart === 'function') { createHRZoneChart(); }
     } catch (error) {
         console.error('HR Zone chart init error:', error);
     }
@@ -4236,7 +4280,7 @@ function switchAnalyticsSubtab(subtabId) {
     setTimeout(() => {
         if (subtabId === 'performance') {
             createMETsChart();
-            createHRZoneChart();
+            if (typeof createHRZoneChart === 'function') { createHRZoneChart(); }
         } else if (subtabId === 'cardiovascular') {
             initializeCRPSTrendChart();
         } else if (subtabId === 'multiMetric') {
