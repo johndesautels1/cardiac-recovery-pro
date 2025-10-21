@@ -1744,3 +1744,6 @@
 .analytics-subtab.active {
     display: block;
 }
+
+/* Hide any stray inner text inside header avatar */
+#userPhoto{ font-size:0 !important; color:transparent !important; }
