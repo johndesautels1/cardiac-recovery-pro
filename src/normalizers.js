@@ -73,3 +73,12 @@ setTimeout(() => {
   }
 }, 0);
 
+// Aggressively update any existing service worker to reduce stale cache issues
+if ('serviceWorker' in navigator) {
+  try {
+    navigator.serviceWorker.getRegistrations()
+      .then(regs => regs.forEach(r => { try { r.update(); } catch(e){} }))
+      .catch(() => {});
+  } catch {}
+}
+
