@@ -42,6 +42,14 @@ let storageAvailable = true;
     window.showNotification = (message, type='info') => { showToast(String(message), type); };
 })();
 
+// Provide early safe stubs for header photo handlers until real ones bind
+if (typeof window.uploadUserPhoto !== 'function') {
+    window.uploadUserPhoto = function() { console.log('Upload photo - waiting for app-core.js'); };
+}
+if (typeof window.removeUserPhoto !== 'function') {
+    window.removeUserPhoto = function() { console.log('Remove photo - waiting for app-core.js'); };
+}
+
 // Safely load data from localStorage
 try {
     const storedData = localStorage.getItem('cardiacRecoveryData');
