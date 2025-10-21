@@ -50,7 +50,6 @@ function navigateDate(days) {
     currentDate.setDate(currentDate.getDate() + days);
     updateDateDisplay();
     try {
-        // Ensure UI reflects new date selection
         updateDashboard();
         updateCharts();
         refreshHistoryTable();
@@ -164,7 +163,6 @@ function updateWelcomeMessage() {
 }
 
 // Sanity override to avoid garbled characters breaking template literals
-// Ensures welcome message renders with plain ASCII safely
 updateWelcomeMessage = function() {
     const welcomeElement = document.getElementById('welcomeMessage');
     if (!welcomeElement) return;
@@ -5671,42 +5669,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
 console.log('✅ Performance optimizations loaded: Lazy loading, swipe gestures, debounced inputs');
 
-// ========================================================================
-// EXPOSE FUNCTIONS TO WINDOW FOR ONCLICK HANDLERS
-// ========================================================================
-// Make all onclick handler functions globally available
-window.switchTab = switchTab;
-window.switchAnalyticsSubtab = switchAnalyticsSubtab;
-window.navigateDate = navigateDate;
-window.saveMetrics = saveMetrics;
-window.saveTherapySession = saveTherapySession;
-window.clearForm = clearForm;
-window.toggleHistoricalMode = toggleHistoricalMode;
-window.updateHistoricalDate = updateHistoricalDate;
-window.showExerciseSuggestions = showExerciseSuggestions;
-window.selectExercise = selectExercise;
-window.toggleTheme = toggleTheme;
-window.clearSessionForm = clearSessionForm;
-window.toggleEditGoals = toggleEditGoals;
-window.saveCustomGoals = saveCustomGoals;
-window.cancelEditGoals = cancelEditGoals;
-window.setRecoveryDay1 = setRecoveryDay1;
-window.savePatientName = savePatientName;
-window.savePatientDemographics = savePatientDemographics;
-window.clearCurrentData = clearCurrentData;
-window.clearAllPatientData = clearAllPatientData;
-window.overrideTherapyData = overrideTherapyData;
-window.connectPolarH10 = connectPolarH10;
-window.connectSamsungWatch = connectSamsungWatch;
-window.disconnectDevice = disconnectDevice;
-window.startHRMonitoring = startHRMonitoring;
-window.stopHRMonitoring = stopHRMonitoring;
-window.acknowledgeAlert = acknowledgeAlert;
-window.closeAlert = closeAlert;
-window.toggleAllMetrics = toggleAllMetrics;
-}
-}
-
 // ============================================================================
 // USER PHOTO UPLOAD
 // ============================================================================
@@ -5891,7 +5853,35 @@ async function captureLocation() {
     
     try {
 // Use the GPS tracker module
-const locationData = await window.getLocationLabel();
+let locationData;
+if (window.getLocationLabel && typeof window.getLocationLabel === 'function') {
+  locationData = await window.getLocationLabel();
+} else {
+  locationData = await new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation not supported'));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = position.coords;
+        resolve({
+          coords: {
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            accuracy: coords.accuracy,
+            timestamp: new Date().toISOString()
+          },
+          label: `${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}`,
+          type: 'unknown',
+          googleMapsUrl: `https://www.google.com/maps?q=${coords.latitude},${coords.longitude}`
+        });
+      },
+      (error) => reject(error),
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+    );
+  });
+}
 
 if (locationData && locationData.coords) {
     capturedLocation = locationData;
@@ -5960,3 +5950,42 @@ return '-';
 }
 
 console.log('✅ Location helper function loaded');
+
+// ========================================================================
+// EXPOSE FUNCTIONS TO WINDOW FOR ONCLICK HANDLERS
+// ========================================================================
+// Make all onclick handler functions globally available
+console.log('🔧 Exposing functions to window...');
+window.switchTab = switchTab;
+window.switchAnalyticsSubtab = switchAnalyticsSubtab;
+window.navigateDate = navigateDate;
+window.saveMetrics = saveMetrics;
+window.saveTherapySession = saveTherapySession;
+window.clearForm = clearForm;
+window.toggleHistoricalMode = toggleHistoricalMode;
+window.updateHistoricalDate = updateHistoricalDate;
+window.showExerciseSuggestions = showExerciseSuggestions;
+window.selectExercise = selectExercise;
+window.toggleTheme = toggleTheme;
+window.clearSessionForm = clearSessionForm;
+window.toggleEditGoals = toggleEditGoals;
+window.saveCustomGoals = saveCustomGoals;
+window.cancelEditGoals = cancelEditGoals;
+window.setRecoveryDay1 = setRecoveryDay1;
+window.savePatientName = savePatientName;
+window.savePatientDemographics = savePatientDemographics;
+window.clearCurrentData = clearCurrentData;
+window.clearAllPatientData = clearAllPatientData;
+window.overrideTherapyData = overrideTherapyData;
+window.connectPolarH10 = connectPolarH10;
+window.connectSamsungWatch = connectSamsungWatch;
+window.disconnectDevice = disconnectDevice;
+window.startHRMonitoring = startHRMonitoring;
+window.stopHRMonitoring = stopHRMonitoring;
+window.acknowledgeAlert = acknowledgeAlert;
+window.closeAlert = closeAlert;
+window.toggleAllMetrics = toggleAllMetrics;
+
+console.log('✅ All functions exposed to window for onclick handlers');
+
+}}
