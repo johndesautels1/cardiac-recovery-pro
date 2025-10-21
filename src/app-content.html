@@ -37,6 +37,13 @@
             </p>
         </header>
 
+        <!-- SIMPLE PHOTO UPLOADER (robust, explicit controls) -->
+        <div style="display:flex; gap:10px; align-items:center; margin: 8px 0 16px 0;">
+            <button id="clientPhotoButton" class="btn" style="padding:8px 14px; font-weight:700;">Upload Client Photo</button>
+            <input id="clientPhotoInput" type="file" accept="image/*" style="display:none" />
+            <span style="font-size:0.9rem; color: var(--muted);">Used for header avatar only</span>
+        </div>
+
         <!-- CALENDAR NAVIGATION -->
         <nav aria-label="Date navigation" class="calendar-nav">
             <div class="calendar-controls">

@@ -120,6 +120,11 @@ function init() {
         if (gpsButton) {
             gpsButton.addEventListener('click', function(e){ if (typeof captureLocation === 'function') captureLocation(); });
         }
+        // Historical controls decoupled from GPS
+        const histToggle = document.getElementById('historicalModeToggle');
+        if (histToggle) histToggle.addEventListener('change', () => { try { toggleHistoricalMode(); } catch(e){} });
+        const histDate = document.getElementById('historicalDate');
+        if (histDate) histDate.addEventListener('change', () => { try { updateHistoricalDate(); } catch(e){} });
     } catch(e) { /* non-fatal */ }
 }
 
@@ -6067,4 +6072,5 @@ window.toggleAllMetrics = toggleAllMetrics;
 console.log('✅ All functions exposed to window for onclick handlers');
 
 }}
+
 

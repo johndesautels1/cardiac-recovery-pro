@@ -11,7 +11,9 @@ function displayUserPhoto(photoData) {
 
 function bindPhotoUploader() {
   const photoElement = document.getElementById('userPhoto');
-  const input = document.getElementById('userPhotoInput');
+  // Prefer new explicit controls; fall back to legacy hidden input if present
+  const button = document.getElementById('clientPhotoButton');
+  const input = document.getElementById('clientPhotoInput') || document.getElementById('userPhotoInput');
   if (!photoElement || !input) return;
 
   // Load existing
@@ -20,7 +22,12 @@ function bindPhotoUploader() {
     if (existing) displayUserPhoto(existing);
   } catch {}
 
-  photoElement.addEventListener('click', () => input.click());
+  if (button) {
+    button.addEventListener('click', () => input.click());
+  } else {
+    // Fallback: clicking the avatar opens file picker if no button present
+    photoElement.addEventListener('click', () => input.click());
+  }
   photoElement.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     try {
@@ -52,4 +59,3 @@ if (document.readyState === 'loading') {
 } else {
   bindPhotoUploader();
 }
-
