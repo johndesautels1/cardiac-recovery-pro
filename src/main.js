@@ -16,9 +16,26 @@ import { initializeApp } from './app-loader.js';
   if (loaded) {
     console.log('✅ HTML content loaded, initializing JavaScript...');
 
-    // Now import and run all the JavaScript functionality
-    // This ensures DOM elements exist before JS tries to access them
-    await import('./app-core.js');
+    // Load app-core.js from public folder (not processed by Vite)
+    // It assigns functions to window object directly
+    const coreScript = document.createElement('script');
+    coreScript.src = '/app-core.js';
+    coreScript.type = 'text/javascript';
+    document.body.appendChild(coreScript);
+
+    // Wait for core script to load
+    await new Promise(resolve => {
+      coreScript.onload = () => {
+        console.log('✅ app-core.js loaded successfully');
+        resolve();
+      };
+      coreScript.onerror = () => {
+        console.error('❌ Failed to load app-core.js');
+        resolve();
+      };
+    });
+
+    // NOTE: Removed await import('./app-core.js') - now loaded as regular script above
     
     // Import utility modules
     await import('./utils/gps-tracker.js');
@@ -30,6 +47,8 @@ import { initializeApp } from './app-loader.js';
     await import('./utils/chart-validator.js');
     await import('./utils/recovery-protocol.js');
     await import('./utils/data-validation.js');
+    // Normalize labels/icons after core is ready
+    await import('./normalizers.js');
 
     console.log('✅ Cardiac Recovery Pro fully loaded!');
     console.log('✅ All utility modules loaded: GPS, Backup, Symptoms, Alerts, Validation, PWA, Protocol, Milestones, ChartValidator');
