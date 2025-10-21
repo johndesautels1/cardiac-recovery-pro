@@ -42,27 +42,6 @@ let storageAvailable = true;
     window.showNotification = (message, type='info') => { showToast(String(message), type); };
 })();
 
-// Provide early safe stubs for header photo handlers until real ones bind
-if (typeof window.uploadUserPhoto !== 'function') {
-    window.uploadUserPhoto = function() { console.log('Upload photo - waiting for app-core.js'); };
-}
-if (typeof window.removeUserPhoto !== 'function') {
-    window.removeUserPhoto = function() { console.log('Remove photo - waiting for app-core.js'); };
-}
-// Early GPS stubs to avoid placeholder logs; delegate when real functions bind
-if (typeof window.captureLocation !== 'function') {
-    window.captureLocation = function() {
-        if (typeof window._captureLocationReal === 'function') return window._captureLocationReal();
-        console.log('Capture location - waiting for app-core.js and GPS module');
-    };
-}
-if (typeof window.clearLocation !== 'function') {
-    window.clearLocation = function() {
-        if (typeof window._clearLocationReal === 'function') return window._clearLocationReal();
-        console.log('Clear location - waiting for app-core.js');
-    };
-}
-
 // Safely load data from localStorage
 try {
     const storedData = localStorage.getItem('cardiacRecoveryData');
@@ -108,27 +87,6 @@ function init() {
         const locDisp = document.getElementById('locationDisplay');
         if (locDisp) locDisp.style.display = 'none';
     } catch(e) { /* non-fatal */ }
-
-    // Bind handlers directly to avoid relying on global name lookups
-    try {
-        const userPhoto = document.getElementById('userPhoto');
-        if (userPhoto) {
-            try { userPhoto.textContent = ''; } catch(e){}
-            userPhoto.onclick = function() { if (typeof uploadUserPhoto === 'function') uploadUserPhoto(); };
-            userPhoto.oncontextmenu = function(e) { e.preventDefault(); if (typeof removeUserPhoto === 'function') removeUserPhoto(); return false; };
-        }
-        const gpsButton = document.getElementById('gpsButton');
-        if (gpsButton) {
-            gpsButton.addEventListener('click', function(){ if (typeof captureLocation === 'function') captureLocation(); });
-        }
-        // Historical controls decoupled from GPS
-        const histToggle = document.getElementById('historicalModeToggle');
-        if (histToggle) histToggle.addEventListener('change', () => { try { toggleHistoricalMode(); } catch(e){} });
-        const histDate = document.getElementById('historicalDate');
-        if (histDate) histDate.addEventListener('change', () => { try { updateHistoricalDate(); } catch(e){} });
-        const day1Btn = document.getElementById('setDay1Btn');
-        if (day1Btn) day1Btn.addEventListener('click', () => { try { setRecoveryDay1(); } catch(e){} });
-    } catch(e) { /* non-fatal */ }
 }
 
 // DATE NAVIGATION
@@ -146,18 +104,10 @@ function navigateDate(days) {
 
 function updateDateDisplay() {
     const dateStr = currentDate.toISOString().split('T')[0];
-    const currentDateEl = document.getElementById('currentDate');
-    if (currentDateEl) {
-        currentDateEl.textContent = currentDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    }
-    const entryDateEl = document.getElementById('entryDate');
-    if (entryDateEl) entryDateEl.textContent = dateStr;
-    const picker = document.getElementById('datePicker');
-    if (picker) picker.value = dateStr;
-    try {
-        const badge = document.getElementById('historicalBadge');
-        if (badge) badge.style.display = (typeof isHistoricalMode !== 'undefined' && isHistoricalMode) ? 'inline-block' : 'none';
-    } catch(e){}
+    document.getElementById('currentDate').textContent =
+        currentDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    document.getElementById('entryDate').textContent = dateStr;
+    document.getElementById('datePicker').value = dateStr;
     loadDataForDate(dateStr);
 }
 
@@ -1409,32 +1359,28 @@ let historicalDate = null;
 function toggleHistoricalMode() {
     const toggle = document.getElementById('historicalModeToggle');
     const picker = document.getElementById('historicalDatePicker');
-    isHistoricalMode = toggle && toggle.checked;
+    isHistoricalMode = toggle.checked;
+
     if (isHistoricalMode) {
-        if (picker) picker.style.display = 'block';
+        picker.style.display = 'block';
+        // Set default historical date to 6 months ago
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-        const histInput = document.getElementById('historicalDate');
-        if (histInput) {
-            histInput.value = sixMonthsAgo.toISOString().split('T')[0];
-            updateHistoricalDate();
-        }
+        document.getElementById('historicalDate').value = sixMonthsAgo.toISOString().split('T')[0];
+        updateHistoricalDate();
     } else {
-        if (picker) picker.style.display = 'none';
+        picker.style.display = 'none';
         historicalDate = null;
-        const entryDateEl = document.getElementById('entryDate');
-        if (entryDateEl) entryDateEl.textContent = currentDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        // Reset to current date
+        document.getElementById('entryDate').textContent = currentDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     }
-    try { const b=document.getElementById('historicalBadge'); if (b) b.style.display = isHistoricalMode ? 'inline-block':'none'; } catch(e){}
 }
 
 function updateHistoricalDate() {
     const dateInput = document.getElementById('historicalDate');
-    if (dateInput && dateInput.value) {
+    if (dateInput.value) {
         historicalDate = new Date(dateInput.value + 'T00:00:00');
-        const entryDateEl = document.getElementById('entryDate');
-        if (entryDateEl) entryDateEl.textContent = historicalDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + ' (Historical)';
-        try { const b=document.getElementById('historicalBadge'); if (b) { b.style.display='inline-block'; b.textContent='Historical: ' + new Date(dateInput.value+'T00:00:00').toLocaleDateString('en-US'); } } catch(e){}
+        document.getElementById('entryDate').textContent = historicalDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + ' (Historical)';
     }
 }
 
@@ -1501,7 +1447,7 @@ function saveMetrics() {
     if (notes.trim() !== '') {
         metrics.notes = notes.trim();
     }
-// Attach GPS location if captured            (function(){ const _loc = (typeof window.getCapturedLocation==='function'? window.getCapturedLocation(): capturedLocation); return _loc && _loc.coords; })() {                metrics.location = {                    latitude: capturedLocation.coords.latitude,                    longitude: capturedLocation.coords.longitude,                    label: capturedLocation.label,                    timestamp: capturedLocation.coords.timestamp,                    accuracy: capturedLocation.coords.accuracy                };                console.log('📍 Location attached to metrics:', metrics.location);            }
+// Attach GPS location if captured            if (capturedLocation && capturedLocation.coords) {                metrics.location = {                    latitude: capturedLocation.coords.latitude,                    longitude: capturedLocation.coords.longitude,                    label: capturedLocation.label,                    timestamp: capturedLocation.coords.timestamp,                    accuracy: capturedLocation.coords.accuracy                };                console.log('📍 Location attached to metrics:', metrics.location);            }
 
     if (hasErrors) {
         showNotification('Please fix invalid values before saving', 'error');
@@ -2407,7 +2353,7 @@ function saveTherapySession() {
     // Save to localStorage
     try {
         localStorage.setItem('therapySessions', JSON.stringify(therapySessions));
-        showNotification('Therapy session saved successfully', 'success');
+        showNotification('✅ Therapy session saved successfully', 'success');
     } catch (error) {
         console.error('Error saving session:', error);
         showNotification('⚠️ Could not save session persistently', 'error');
@@ -2883,7 +2829,7 @@ function calculatePersonalizedRecovery() {
 function updateProgressChart() {
     const canvas = document.getElementById('progressChart');
     const weeks = Array.from({length: 12}, (_, i) => `Week ${i + 1}`);
-    if (!canvas) { return; }
+    if (!canvas) { console.warn("progressChart canvas not found"); return; }
     const dates = Object.keys(allData).sort();
 
     // Initialize data arrays for all metrics
@@ -3222,7 +3168,7 @@ function updateProgressChart() {
 
 function updateMetricsChart() {
     const canvas = document.getElementById('metricsChart');
-    if (!canvas) { return; }
+    if (!canvas) { console.warn("metricsChart canvas not found"); return; }
     const dates = Object.keys(allData).sort().map(d => new Date(d).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
     const vo2 = Object.keys(allData).sort().map(d => allData[d].vo2Max || null);
     const hr = Object.keys(allData).sort().map(d => allData[d].restingHR || null);
@@ -3253,7 +3199,7 @@ function updateMetricsChart() {
 function updateHRVChart() {
     const canvas = document.getElementById('hrvChart');
     const dates = Object.keys(allData).sort().map(d => new Date(d).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
-    if (!canvas) { return; }
+    if (!canvas) { console.warn("hrvChart canvas not found"); return; }
     const sdnn = Object.keys(allData).sort().map(d => allData[d].sdnn || null);
     const rmssd = Object.keys(allData).sort().map(d => allData[d].rmssd || null);
     const pnn50 = Object.keys(allData).sort().map(d => allData[d].pnn50 || null);
@@ -3370,7 +3316,7 @@ function calculateRadarScores() {
 
 function updateRadarChart() {
     const canvas = document.getElementById('radarChart');
-    if (!canvas) { return; }
+    if (!canvas) { console.warn("radarChart canvas not found"); return; }
     const radarData = calculateRadarScores();
 
     // Calculate average score to determine overall performance color
@@ -3562,7 +3508,7 @@ function calculateRiskByDate() {
 
 function updateRiskChart() {
     const canvas = document.getElementById('riskChart');
-    if (!canvas) { return; }
+    if (!canvas) { console.warn("riskChart canvas not found"); return; }
 
     const riskData = calculateRiskByDate();
 
@@ -5937,7 +5883,7 @@ console.log('✅ Keyboard shortcuts initialized (Ctrl+Shift+S to save)');
 // GPS LOCATION INTEGRATION
 // ============================================================================
 
-let capturedLocation = null;\n// expose safe setters/getters so external modules can update location\nwindow.setCapturedLocation = function(loc){ try { capturedLocation = loc; } catch(e){} };\nwindow.getCapturedLocation = function(){ try { return capturedLocation; } catch(e){ return null } };
+let capturedLocation = null;
 
 async function captureLocation() {
     const gpsButton = document.getElementById('gpsButton');
@@ -6087,9 +6033,3 @@ window.toggleAllMetrics = toggleAllMetrics;
 console.log('✅ All functions exposed to window for onclick handlers');
 
 }}
-
-
-
-
-
-
