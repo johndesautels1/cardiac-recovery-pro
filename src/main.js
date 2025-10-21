@@ -49,6 +49,9 @@ import { initializeApp } from './app-loader.js';
     await import('./utils/data-validation.js');
     // Normalize labels/icons after core is ready
     await import('./normalizers.js');
+    // New robust handlers
+    await import('./utils/photo-uploader.js');
+    await import('./utils/gps-controller.js');
 
     console.log('✅ Cardiac Recovery Pro fully loaded!');
     console.log('✅ All utility modules loaded: GPS, Backup, Symptoms, Alerts, Validation, PWA, Protocol, Milestones, ChartValidator');

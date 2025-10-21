@@ -1481,7 +1481,7 @@ function saveMetrics() {
     if (notes.trim() !== '') {
         metrics.notes = notes.trim();
     }
-// Attach GPS location if captured            if (capturedLocation && capturedLocation.coords) {                metrics.location = {                    latitude: capturedLocation.coords.latitude,                    longitude: capturedLocation.coords.longitude,                    label: capturedLocation.label,                    timestamp: capturedLocation.coords.timestamp,                    accuracy: capturedLocation.coords.accuracy                };                console.log('📍 Location attached to metrics:', metrics.location);            }
+// Attach GPS location if captured            (function(){ const _loc = (typeof window.getCapturedLocation==='function'? window.getCapturedLocation(): capturedLocation); return _loc && _loc.coords; })() {                metrics.location = {                    latitude: capturedLocation.coords.latitude,                    longitude: capturedLocation.coords.longitude,                    label: capturedLocation.label,                    timestamp: capturedLocation.coords.timestamp,                    accuracy: capturedLocation.coords.accuracy                };                console.log('📍 Location attached to metrics:', metrics.location);            }
 
     if (hasErrors) {
         showNotification('Please fix invalid values before saving', 'error');
@@ -5917,7 +5917,7 @@ console.log('✅ Keyboard shortcuts initialized (Ctrl+Shift+S to save)');
 // GPS LOCATION INTEGRATION
 // ============================================================================
 
-let capturedLocation = null;
+let capturedLocation = null;\n// expose safe setters/getters so external modules can update location\nwindow.setCapturedLocation = function(loc){ try { capturedLocation = loc; } catch(e){} };\nwindow.getCapturedLocation = function(){ try { return capturedLocation; } catch(e){ return null } };
 
 async function captureLocation() {
     const gpsButton = document.getElementById('gpsButton');
@@ -6067,3 +6067,4 @@ window.toggleAllMetrics = toggleAllMetrics;
 console.log('✅ All functions exposed to window for onclick handlers');
 
 }}
+
