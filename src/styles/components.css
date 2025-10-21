@@ -78,6 +78,9 @@
             border: 2px solid rgba(96,165,250,0.2);
         }
 
+        /* Hide +/- date navigation buttons; rely on date picker only */
+        .calendar-controls .nav-buttons { display: none !important; }
+
         .calendar-controls {
             display: flex;
             align-items: center;
