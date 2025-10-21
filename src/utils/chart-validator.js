@@ -37,7 +37,9 @@ function hasAnyData() {
 }
 
 function hasMinimumDataForCharts() {
-    return hasPatientProfile() && hasSurgeryDate() && hasAnyData();
+    // Charts should render as soon as surgery date is entered
+    // Individual charts will show "no data yet" if specific fields are missing
+    return hasSurgeryDate();
 }
 
 // ============================================================================
@@ -77,24 +79,24 @@ function showChartPlaceholder(canvasId, message = null) {
     // Determine what's missing
     let icon = '📊';
     let title = 'Chart Not Available';
-    let description = message || 'Complete your profile to see this chart';
+    let description = message || 'Enter your surgery date to see charts';
     let actionItems = [];
 
-    if (!hasPatientProfile()) {
-        icon = '👤';
-        title = 'Complete Your Profile';
-        description = 'Enter your basic information to see personalized charts';
-        actionItems = ['Name', 'Age', 'Sex', 'Height', 'Weight'];
-    } else if (!hasSurgeryDate()) {
+    if (!hasSurgeryDate()) {
         icon = '📅';
         title = 'Set Your Surgery Date';
-        description = 'Enter your surgery date to track recovery progress over time';
-        actionItems = ['Surgery Date'];
+        description = 'Enter your surgery date to start tracking recovery progress';
+        actionItems = ['Go to Dashboard tab', 'Enter Surgery Date'];
     } else if (!hasAnyData()) {
-        icon = '📝';
-        title = 'Log Your First Entry';
-        description = 'Start tracking your vitals and activities to see charts';
-        actionItems = ['Go to Data Entry tab', 'Enter your daily metrics'];
+        icon = '📊';
+        title = 'No Data Yet';
+        description = 'This chart will populate as you enter relevant data';
+        actionItems = ['Go to Data Entry tab', 'Enter metrics for this chart'];
+    } else if (!hasPatientProfile()) {
+        icon = '👤';
+        title = 'Enhance Your Charts';
+        description = 'Add your profile for more personalized insights (optional)';
+        actionItems = ['Name', 'Age', 'Sex (for better CRPS calculation)'];
     }
 
     let html = `

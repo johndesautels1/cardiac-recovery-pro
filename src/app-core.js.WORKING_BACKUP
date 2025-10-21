@@ -58,14 +58,6 @@ function updateDateDisplay() {
     document.getElementById('entryDate').textContent = dateStr;
     document.getElementById('datePicker').value = dateStr;
     loadDataForDate(dateStr);
-
-    // Update charts when date changes
-    try {
-        updateCharts();
-        updateDashboard();
-    } catch (error) {
-        console.error('Error updating charts on date change:', error);
-    }
 }
 
 document.getElementById('datePicker').addEventListener('change', function(e) {
@@ -1305,43 +1297,20 @@ let historicalDate = null;
 function toggleHistoricalMode() {
     const toggle = document.getElementById('historicalModeToggle');
     const picker = document.getElementById('historicalDatePicker');
-
-    if (!toggle) {
-        console.error('❌ Historical mode toggle element not found');
-        return;
-    }
-    if (!picker) {
-        console.error('❌ Historical date picker element not found');
-        return;
-    }
-
     isHistoricalMode = toggle.checked;
-    console.log('📅 Historical mode toggled:', isHistoricalMode);
 
     if (isHistoricalMode) {
         picker.style.display = 'block';
-        console.log('✅ Historical date picker shown');
-
         // Set default historical date to 6 months ago
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-        const historicalDateInput = document.getElementById('historicalDate');
-        if (historicalDateInput) {
-            historicalDateInput.value = sixMonthsAgo.toISOString().split('T')[0];
-            updateHistoricalDate();
-        } else {
-            console.error('❌ Historical date input not found');
-        }
+        document.getElementById('historicalDate').value = sixMonthsAgo.toISOString().split('T')[0];
+        updateHistoricalDate();
     } else {
         picker.style.display = 'none';
         historicalDate = null;
-        console.log('✅ Historical mode disabled, picker hidden');
-
         // Reset to current date
-        const entryDateElement = document.getElementById('entryDate');
-        if (entryDateElement) {
-            entryDateElement.textContent = currentDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-        }
+        document.getElementById('entryDate').textContent = currentDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     }
 }
 
@@ -5971,3 +5940,17 @@ return '-';
 }
 
 console.log('✅ Location helper function loaded');
+// Fix for missing navigateDate function
+window.navigateDate = function(offset) {
+  const dateDisplay = document.getElementById("dateDisplay");
+  if (!dateDisplay) return;
+
+  const currentDate = new Date(dateDisplay.textContent);
+  if (isNaN(currentDate)) return;
+
+  currentDate.setDate(currentDate.getDate() + offset);
+  dateDisplay.textContent = currentDate.toDateString();
+
+  // Optional: trigger any other updates here
+  console.log("Date navigated to:", currentDate);
+};

@@ -1,0 +1,154 @@
+Overview
+This file (app-core.js) is the main client-side logic for the "Cardiac Recovery Pro" application, a comprehensive web-based tool for tracking, analyzing, and visualizing cardiac rehabilitation progress. It manages patient data, therapy sessions, clinical metrics, device integration (Bluetooth heart rate monitors), and provides interactive dashboards, analytics, and user interface features. The file is designed for a rich, interactive, and offline-capable Progressive Web App (PWA) experience, supporting both desktop and mobile users.
+
+Key responsibilities:
+
+Data storage and error handling (localStorage, in-memory fallback)
+Patient demographics and daily metric management
+Calculation of the Cardiac Recovery Probability Score (CRPS) using evidence-based algorithms
+Input validation, clinical alerting, and notification system
+Therapy session tracking and care team alerting
+Data visualization (charts, dashboards, radar/risk charts, progress tracking)
+Device integration (Bluetooth HR monitors: Polar H10, Samsung Watch)
+PWA features: offline support, install prompts, theme toggling, performance optimizations
+UI/UX enhancements: tab navigation, swipe gestures, pull-to-refresh, keyboard shortcuts, photo upload, GPS integration
+This file acts as the "controller" for the app, orchestrating data flow, user interactions, and integration with external devices and services.
+
+Key Components
+1. Data Management and Storage
+allData: Central object for all patient daily metrics, loaded/saved to localStorage.
+Therapy Sessions: Managed in a separate array, also persisted in localStorage.
+Patient Demographics: Age, sex, height, weight, with support for integration from a master app.
+Error Handling: Fallback to in-memory storage if localStorage is unavailable.
+2. Patient Metrics and CRPS Calculation
+CRPS Algorithm: Calculates a comprehensive recovery probability score based on multiple clinical metrics (VO2 Max, HRV, BP, symptoms, etc.), with category breakdowns and color-coded interpretations.
+Input Validation: Extensive validation rules for each metric, with real-time feedback and critical/warning thresholds.
+Clinical Alerts: Detects urgent/warning conditions (e.g., high chest pain, low SpO2) and prompts user action before saving data.
+3. Therapy Session Management
+Session CRUD: Add, view, and delete therapy sessions, with red flag detection and care team notification triggers.
+Session History Table: Displays all recorded sessions with key details and alert indicators.
+4. Data Visualization and Analytics
+Charts: Uses Chart.js to render:
+Progress over time (multi-metric line charts)
+CRPS trend chart
+Radar chart (normalized performance)
+Risk stratification bar chart
+METs and HR zone charts
+Weekly Milestones: Calculates and displays week-over-week improvements and custom goals.
+Population Comparison: Compares user metrics to population norms and stratifies risk.
+5. Device Integration (Bluetooth)
+Polar H10 & Samsung Watch: Connects via Web Bluetooth, streams heart rate and HRV data, parses and visualizes in real time.
+Session Override: Allows users to auto-fill data entry fields from device session data.
+Error Handling & Reconnection: Robust handling of device disconnects and reconnection attempts.
+6. User Interface and Experience
+Tab and Subtab Navigation: Handles switching between main app sections and analytics subtabs.
+Mobile Enhancements: Bottom navigation, swipe gestures for tab/date navigation, pull-to-refresh.
+Theme Toggle: Light/dark mode with persistent preference.
+Notifications: In-app notifications for success, errors, and alerts.
+Photo Upload: User can upload and display a profile photo.
+GPS Integration: Capture and display user location for data entries.
+7. PWA and Performance Features
+Service Worker: Inline registration for offline support and caching.
+Install Prompt: Custom PWA install prompt with dismissal logic.
+Offline Status Indicator: Banner when offline.
+Performance Optimizations: Lazy loading for videos, debounced input handlers, efficient chart updates.
+8. Accessibility and Usability
+Keyboard Shortcuts: Ctrl+Shift+S to save metrics or sessions.
+ARIA and Focus Management: For tab navigation and accessibility.
+Sticky Header: UI enhancement for better navigation.
+9. Global Exposure
+Window Exports: All major functions are attached to window for use in HTML event handlers.
+In summary:
+This file is the comprehensive, single-page application logic for a cardiac recovery tracking app, handling everything from data entry and validation to device integration, analytics, and user experience optimizations. It is central to the functioning of the app, acting as the main orchestrator for all user and data flows.
+
+Hey there - I've reviewed your changes and found some issues that need to be addressed.
+
+Prompt for AI Agents
+src/app-core.js:1494
+
+issue(bug_risk): Anonymous function for average calculation is missing a name.
+    }
+}
+
+// Helper function to calculate average
+function (metric) {
+    const dates = Object.keys(allData);
+    const values = dates.map(d => allData[d][metric]).filter(v => v !== undefined && v !== null);
+The current syntax is invalid; please provide a function name so it can be referenced and used elsewhere.
+
+Resolve
+src/app-core.js:2257
+
+suggestion(bug_risk): Red flag confirmation logic is always executed, even if no red flags are present.
+function saveTherapySession() {
+Wrap the confirmation dialog and care team notification in a condition that checks if 'session.redFlags' exists and is not empty.
+
+Suggested implementation:
+
+function saveTherapySession() {
+    const session = {
+        id: Date.now().toString(),
+        sessionDate: document.getElementById('sessionDate').value,
+        sessionTime: document.getElementById('sessionTime').value,
+        duration: document.getElementById('sessionDuration').value,
+        therapistName: document.getElementById('therapistName').value,
+        therapyCompany: document.getElementById('therapyCompany').value,
+        therapistCredentials: document.getElementById('therapistCredentials').value,
+        exerciseType: document.getElementById('exerciseType').value,
+        exerciseIntensity: document.getElementById('exerciseIntensity').value,
+        // ... other session properties ...
+    };
+
+    // Only show confirmation and notify care team if redFlags exist and are not empty
+    if (session.redFlags && Array.isArray(session.redFlags) && session.redFlags.length > 0) {
+        const confirmRedFlags = window.confirm(
+            "Red flags detected in this session. Do you want to notify the care team?"
+        );
+        if (confirmRedFlags) {
+            notifyCareTeam(session);
+        }
+    }
+
+    // ... rest of saveTherapySession logic ...
+
+You may need to ensure that session.redFlags is properly set before this block, and that notifyCareTeam(session) is defined elsewhere in your code. Also, add any other session properties as needed in the session object.
+
+Resolve
+src/app-core.js:2288
+
+issue(bug_risk): Therapy session is added even if user cancels the red flag confirmation.
+        triggerCareTeamNotification(session);
+    }
+
+    // Add to sessions array
+    therapySessions.push(session);
+
+    // Save to localStorage
+The session should only be added to therapySessions if the user confirms the red flag dialog; currently, it is added regardless.
+
+Resolve
+src/app-core.js:4237
+
+nitpick(code_refinement): Duplicate conditional for destroying metsChart.
+    const canvas = document.getElementById('metsProgressChart');
+    if (!canvas) return;
+
+    if (window.metsChart && typeof window.metsChart.destroy === 'function') {
+    if (window.metsChart) {
+        window.metsChart.destroy();
+    }
+Please combine the two 'if' statements into one to avoid redundancy.
+
+Resolve
+src/app-core.js:5067
+
+nitpick(code_refinement): Redundant destruction logic for hrChart.
+
+    const ctx = canvas.getContext('2d');
+
+    if (hrChart && typeof hrChart.destroy === 'function') {
+    if (hrChart) {
+        hrChart.destroy();
+    }
+The conditional can be combined to avoid checking 'hrChart' twice.
+
