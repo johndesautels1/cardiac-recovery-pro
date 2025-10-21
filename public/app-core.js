@@ -108,6 +108,19 @@ function init() {
         const locDisp = document.getElementById('locationDisplay');
         if (locDisp) locDisp.style.display = 'none';
     } catch(e) { /* non-fatal */ }
+
+    // Bind handlers directly to avoid relying on global name lookups
+    try {
+        const userPhoto = document.getElementById('userPhoto');
+        if (userPhoto) {
+            userPhoto.onclick = function() { if (typeof uploadUserPhoto === 'function') uploadUserPhoto(); };
+            userPhoto.oncontextmenu = function(e) { e.preventDefault(); if (typeof removeUserPhoto === 'function') removeUserPhoto(); return false; };
+        }
+        const gpsButton = document.getElementById('gpsButton');
+        if (gpsButton) {
+            gpsButton.addEventListener('click', function(e){ if (typeof captureLocation === 'function') captureLocation(); });
+        }
+    } catch(e) { /* non-fatal */ }
 }
 
 // DATE NAVIGATION
@@ -2374,7 +2387,7 @@ function saveTherapySession() {
     // Save to localStorage
     try {
         localStorage.setItem('therapySessions', JSON.stringify(therapySessions));
-        showNotification('✅ Therapy session saved successfully', 'success');
+        showNotification('Therapy session saved successfully', 'success');
     } catch (error) {
         console.error('Error saving session:', error);
         showNotification('⚠️ Could not save session persistently', 'error');
@@ -2850,7 +2863,7 @@ function calculatePersonalizedRecovery() {
 function updateProgressChart() {
     const canvas = document.getElementById('progressChart');
     const weeks = Array.from({length: 12}, (_, i) => `Week ${i + 1}`);
-    if (!canvas) { console.warn("progressChart canvas not found"); return; }
+    if (!canvas) { return; }
     const dates = Object.keys(allData).sort();
 
     // Initialize data arrays for all metrics
@@ -3189,7 +3202,7 @@ function updateProgressChart() {
 
 function updateMetricsChart() {
     const canvas = document.getElementById('metricsChart');
-    if (!canvas) { console.warn("metricsChart canvas not found"); return; }
+    if (!canvas) { return; }
     const dates = Object.keys(allData).sort().map(d => new Date(d).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
     const vo2 = Object.keys(allData).sort().map(d => allData[d].vo2Max || null);
     const hr = Object.keys(allData).sort().map(d => allData[d].restingHR || null);
@@ -3220,7 +3233,7 @@ function updateMetricsChart() {
 function updateHRVChart() {
     const canvas = document.getElementById('hrvChart');
     const dates = Object.keys(allData).sort().map(d => new Date(d).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}));
-    if (!canvas) { console.warn("hrvChart canvas not found"); return; }
+    if (!canvas) { return; }
     const sdnn = Object.keys(allData).sort().map(d => allData[d].sdnn || null);
     const rmssd = Object.keys(allData).sort().map(d => allData[d].rmssd || null);
     const pnn50 = Object.keys(allData).sort().map(d => allData[d].pnn50 || null);
@@ -3337,7 +3350,7 @@ function calculateRadarScores() {
 
 function updateRadarChart() {
     const canvas = document.getElementById('radarChart');
-    if (!canvas) { console.warn("radarChart canvas not found"); return; }
+    if (!canvas) { return; }
     const radarData = calculateRadarScores();
 
     // Calculate average score to determine overall performance color
@@ -3529,7 +3542,7 @@ function calculateRiskByDate() {
 
 function updateRiskChart() {
     const canvas = document.getElementById('riskChart');
-    if (!canvas) { console.warn("riskChart canvas not found"); return; }
+    if (!canvas) { return; }
 
     const riskData = calculateRiskByDate();
 
