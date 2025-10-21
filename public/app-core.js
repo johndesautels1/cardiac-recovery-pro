@@ -49,6 +49,19 @@ if (typeof window.uploadUserPhoto !== 'function') {
 if (typeof window.removeUserPhoto !== 'function') {
     window.removeUserPhoto = function() { console.log('Remove photo - waiting for app-core.js'); };
 }
+// Early GPS stubs to avoid placeholder logs; delegate when real functions bind
+if (typeof window.captureLocation !== 'function') {
+    window.captureLocation = function() {
+        if (typeof window._captureLocationReal === 'function') return window._captureLocationReal();
+        console.log('Capture location - waiting for app-core.js and GPS module');
+    };
+}
+if (typeof window.clearLocation !== 'function') {
+    window.clearLocation = function() {
+        if (typeof window._clearLocationReal === 'function') return window._clearLocationReal();
+        console.log('Clear location - waiting for app-core.js');
+    };
+}
 
 // Safely load data from localStorage
 try {
