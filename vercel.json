@@ -1,1 +1,1 @@
-{ "version": 2, "builds": [ { "src": "package.json", "use": "@vercel/node" }, { "src": "dist/**", "use": "@vercel/static" } ], "routes": [ { "src": "/(.*)", "dest": "dist/$1" } ] } 
+{ "buildCommand": "npm run build", "outputDirectory": "dist", "framework": "vite", "rewrites": [ { "source": "/(.*)", "destination": "/index.html" } ] } 
