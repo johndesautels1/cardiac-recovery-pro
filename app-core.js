@@ -5859,55 +5859,126 @@ console.log('✅ Keyboard shortcuts initialized (Ctrl+Shift+S to save)');
 
 let capturedLocation = null;
 
+// Robust GPS capture with timeout, permission checking, and normalized output
+// Prevents UI from staying disabled on timeout or permission denial
 async function captureLocation() {
+    // Guard: Check if DOM elements exist
     const gpsButton = document.getElementById('gpsButton');
     const locationDisplay = document.getElementById('locationDisplay');
     const locationLabel = document.getElementById('locationLabel');
     const locationMapLink = document.getElementById('locationMapLink');
     
-    // Show loading state
+    if (!gpsButton) {
+        console.error('GPS button not found');
+        return;
+    }
+    
+    // Disable button at start
     gpsButton.disabled = true;
     gpsButton.innerHTML = '📍 Getting Location...';
     
     try {
-// Use the GPS tracker module
-const locationData = await window.getLocationLabel();
+        // Check permission state if supported
+        if ('permissions' in navigator && 'query' in navigator.permissions) {
+            try {
+                const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+                console.log('📍 Geolocation permission:', permissionStatus.state);
+                if (permissionStatus.state === 'denied') {
+                    throw new Error('Location permission denied. Please enable in browser settings.');
+                }
+            } catch (permErr) {
+                console.warn('Permission query not supported or failed:', permErr);
+            }
+        }
 
-if (locationData && locationData.coords) {
-    capturedLocation = locationData;
-    
-    // Update display
-    locationDisplay.style.display = 'block';
-    locationLabel.textContent = locationData.label;
-    locationMapLink.href = locationData.googleMapsUrl;
-    
-    // Update button to success state
-    gpsButton.innerHTML = '✅ Location Captured';
-    gpsButton.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
-    
-    showNotification('📍 Location captured successfully!', 'success');
-    console.log('📍 Location captured:', locationData);
-} else {
-    throw new Error('Location data not available');
-}
+        // Use window.getLocationLabel if available (preferred), else fall back to geolocation
+        let locationData;
+        if (typeof window.getLocationLabel === 'function') {
+            // Wrap with timeout (12 seconds)
+            locationData = await Promise.race([
+                window.getLocationLabel(),
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Location request timed out after 12 seconds')), 12000)
+                )
+            ]);
+        } else {
+            // Fallback: use raw geolocation with timeout
+            locationData = await new Promise((resolve, reject) => {
+                const timeoutId = setTimeout(() => {
+                    reject(new Error('Geolocation timeout after 12 seconds'));
+                }, 12000);
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        clearTimeout(timeoutId);
+                        const { latitude, longitude, accuracy } = position.coords;
+                        resolve({
+                            coords: {
+                                latitude,
+                                longitude,
+                                accuracy,
+                                timestamp: position.timestamp
+                            },
+                            label: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`,
+                            googleMapsUrl: `https://www.google.com/maps?q=${latitude},${longitude}`
+                        });
+                    },
+                    (error) => {
+                        clearTimeout(timeoutId);
+                        reject(error);
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            });
+        }
+
+        // Normalize location shape
+        if (locationData && locationData.coords && 
+            typeof locationData.coords.latitude === 'number' && 
+            typeof locationData.coords.longitude === 'number') {
+            
+            capturedLocation = {
+                coords: {
+                    latitude: locationData.coords.latitude,
+                    longitude: locationData.coords.longitude,
+                    accuracy: locationData.coords.accuracy || null,
+                    timestamp: locationData.coords.timestamp || Date.now()
+                },
+                label: locationData.label || `${locationData.coords.latitude.toFixed(6)}, ${locationData.coords.longitude.toFixed(6)}`,
+                googleMapsUrl: locationData.googleMapsUrl || 
+                    `https://www.google.com/maps?q=${locationData.coords.latitude},${locationData.coords.longitude}`
+            };
+            
+            // Safely update display elements
+            if (locationDisplay) locationDisplay.style.display = 'block';
+            if (locationLabel) locationLabel.textContent = capturedLocation.label;
+            if (locationMapLink) locationMapLink.href = capturedLocation.googleMapsUrl;
+            
+            // Update button to success state
+            gpsButton.innerHTML = '✅ Location Captured';
+            if (gpsButton.style) {
+                gpsButton.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+            }
+            
+            showNotification('📍 Location captured successfully!', 'success');
+            console.log('📍 Location captured:', capturedLocation);
+        } else {
+            throw new Error('Invalid location data received');
+        }
     } catch (error) {
-console.error('GPS error:', error);
-showNotification('⚠️ Could not get location: ' + error.message, 'error');
-
-// Reset button
-gpsButton.innerHTML = '📍 GET LOCATION';
-gpsButton.disabled = false;
+        console.error('GPS error:', error);
+        const errorMsg = error.message || 'Could not get location';
+        showNotification(`⚠️ ${errorMsg}`, 'error');
+        
+        // Reset button on error
+        gpsButton.innerHTML = capturedLocation ? '📍 UPDATE LOCATION' : '📍 GET LOCATION';
+        if (gpsButton.style && !capturedLocation) {
+            gpsButton.style.background = 'linear-gradient(135deg, var(--cyan), var(--accent))';
+        }
+    } finally {
+        // Always re-enable button
+        gpsButton.disabled = false;
     }
-    
-    // Re-enable button after 2 seconds
-    setTimeout(() => {
-gpsButton.disabled = false;
-if (capturedLocation) {
-    gpsButton.innerHTML = '📍 UPDATE LOCATION';
-} else {
-    gpsButton.innerHTML = '📍 GET LOCATION';
-}
-    }, 2000);
 }
 
 function clearLocation() {

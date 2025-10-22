@@ -660,10 +660,11 @@
                 <h2>📝 Enter Metrics for <span id="entryDate"></span></h2>
 
                 <!-- SAVE / CLEAR BUTTONS AT TOP -->
+                <!-- type="button" prevents accidental form submission that could interrupt flows -->
                 <div style="display: flex; gap: 15px; margin: 20px 0; padding: 15px; background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(96,165,250,0.1)); border-radius: 12px; border: 2px solid var(--accent); flex-wrap: wrap;">
-                    <button class="btn-good" onclick="saveMetrics()" style="flex: 1; font-size: 1.1rem; padding: 16px; min-width: 200px;">💾 SAVE ALL METRICS</button>
-                    <button class="btn-danger" onclick="clearForm()" style="flex: 1; font-size: 1.1rem; padding: 16px; min-width: 200px;">🗑️ CLEAR FORM</button>
-                    <button class="btn" onclick="captureLocation()" id="gpsButton" style="flex: 1; font-size: 1.1rem; padding: 16px; min-width: 200px; background: linear-gradient(135deg, var(--cyan), var(--accent)); color: white; font-weight: 700;">📍 GET LOCATION</button>
+                    <button type="button" class="btn-good" onclick="saveMetrics()" style="flex: 1; font-size: 1.1rem; padding: 16px; min-width: 200px;">💾 SAVE ALL METRICS</button>
+                    <button type="button" class="btn-danger" onclick="clearForm()" style="flex: 1; font-size: 1.1rem; padding: 16px; min-width: 200px;">🗑️ CLEAR FORM</button>
+                    <button type="button" class="btn" onclick="captureLocation()" id="gpsButton" style="flex: 1; font-size: 1.1rem; padding: 16px; min-width: 200px; background: linear-gradient(135deg, var(--cyan), var(--accent)); color: white; font-weight: 700;">📍 GET LOCATION</button>
                 </div>
 
                 <!-- GPS LOCATION DISPLAY -->
