@@ -18,8 +18,8 @@ import { initializeApp } from './app-loader.js';
 
     // Load app-core.js from public folder (not processed by Vite)
     // It assigns functions to window object directly
+    const coreScript = document.createElement('script');
     coreScript.src = '/app-core.js?v=7458ca3';
-    coreScript.src = '/public/app-core.js?v=7458ca3';
     coreScript.type = 'text/javascript';
     document.body.appendChild(coreScript);
 
@@ -69,5 +69,3 @@ import { initializeApp } from './app-loader.js';
     console.error('❌ Failed to initialize app');
   }
 })();
-
-
