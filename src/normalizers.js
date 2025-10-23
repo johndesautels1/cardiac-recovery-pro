@@ -5,21 +5,19 @@ function initializeBottomNavSafe() {
   const bottomNav = document.getElementById('bottomNav');
   if (!bottomNav) return;
   const tabs = [
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'entry', label: 'Entry' },
-    { id: 'sessions', label: 'Sessions' },
-    { id: 'analytics', label: 'Analytics' },
-    { id: 'history', label: 'History' },
-    { id: 'videos', label: 'Videos' },
-    { id: 'hrmonitor', label: 'HR Monitor' },
-    { id: 'education', label: 'Learn More' },
-    { id: 'bluetooth', label: 'Devices' },
-    { id: 'settings', label: 'Settings' }
+    { id: 'entry', label: 'Patient' },        // Position 1 (was Data Entry)
+    { id: 'sessions', label: 'Therapy' },     // Position 2 (was Sessions)
+    { id: 'dashboard', label: 'Dashboard' },  // Position 3
+    { id: 'analytics', label: 'Analytics' },  // Position 4
+    { id: 'history', label: 'History' },      // Position 5
+    { id: 'videos', label: 'Videos' },        // Position 6
+    { id: 'hrmonitor', label: 'LIVE DATA' },  // Position 7 (was HR Monitor)
+    { id: 'education', label: 'Learn More' }  // Position 8
   ];
   let navHTML = '';
   tabs.forEach(tab => {
     navHTML += `
-    <a class="bottom-nav-item ${tab.id === 'dashboard' ? 'active' : ''}"
+    <a class="bottom-nav-item ${tab.id === 'entry' ? 'active' : ''}"
        id="bottomNav-${tab.id}"
        onclick="switchTab('${tab.id}')"
        role="button"

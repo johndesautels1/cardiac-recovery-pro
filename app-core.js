@@ -25,7 +25,19 @@ const exerciseTypes = [
 
 // INITIALIZE
 function init() {
+    // ✅ ALWAYS START WITH TODAY'S ACTUAL DATE
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to midnight local time
+    currentDate = today;
+
+    // ✅ SET CALENDAR MAX TO TODAY (prevents future date selection)
+    const datePickerInput = document.getElementById('datePicker');
+    if (datePickerInput) {
+        datePickerInput.max = today.toISOString().split('T')[0];
+    }
+
     updateDateDisplay();
+
     if (surgeryDateStr) {
         document.getElementById('surgeryDate').value = surgeryDateStr;
         updateRecoveryInfo();
@@ -34,6 +46,7 @@ function init() {
         document.getElementById('patientName').value = patientName;
         updateWelcomeMessage();
     }
+
     loadPatientDemographics(); // Load patient demographics
     updateDashboard();
     updateWeeklyMilestones();
@@ -43,14 +56,34 @@ function init() {
     attachValidationListeners();
     initSwipeGestures();
     initializeBottomNav(); // Initialize mobile bottom navigation
+
+    // ✅ FORCE DATE PICKER TO SHOW TODAY
+    document.getElementById('datePicker').value = currentDate.toISOString().split('T')[0];
+
+    console.log('✅ App initialized - Date set to TODAY:', today.toLocaleDateString());
 }
 
-// DATE NAVIGATION
+// ✅ FIXED DATE NAVIGATION - PREVENTS FUTURE DATES
 function navigateDate(days) {
-    currentDate.setDate(currentDate.getDate() + days);
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + days);
+
+    // ⚠️ PREVENT NAVIGATING PAST TODAY
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (newDate > today) {
+        showNotification('⚠️ Cannot navigate to future dates', 'error');
+        // Auto-reset to today if somehow we got ahead
+        currentDate = today;
+        updateDateDisplay();
+        return;
+    }
+
+    currentDate = newDate;
     updateDateDisplay();
+
     try {
-        // Ensure UI reflects new date selection
         updateDashboard();
         updateCharts();
         refreshHistoryTable();
@@ -68,8 +101,21 @@ function updateDateDisplay() {
     loadDataForDate(dateStr);
 }
 
+// ✅ UPDATE THE DATE PICKER EVENT LISTENER
 document.getElementById('datePicker').addEventListener('change', function(e) {
-    currentDate = new Date(e.target.value + 'T00:00:00');
+    const selectedDate = new Date(e.target.value + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Double-check: prevent future dates
+    if (selectedDate > today) {
+        showNotification('⚠️ Cannot select future dates', 'error');
+        this.value = today.toISOString().split('T')[0];
+        currentDate = today;
+    } else {
+        currentDate = selectedDate;
+    }
+
     updateDateDisplay();
 });
 
@@ -838,16 +884,14 @@ function updateCategoryBreakdown(crpsResult) {
 function initializeCRPSTrendChart() {
     const ctx = document.getElementById('crpsTrendChart');
     if (!ctx) { console.warn("crpsTrendChart canvas not found"); return; }
-    console.log('📊 Initializing CRPS Trend Chart...');
 
-    // Get CRPS scores for the last 90 days
     const today = new Date();
     const crpsData = [];
-    const labels = [];
 
-    for (let i = 90; i >= 0; i--) {
+    // ✅ CENTERED WINDOW: 75 days back, 15 days forward padding
+    for (let i = -75; i <= 15; i++) {
         const date = new Date(today);
-        date.setDate(date.getDate() - i);
+        date.setDate(date.getDate() + i);
         const dateStr = date.toISOString().split('T')[0];
 
         const dayData = allData[dateStr];
@@ -857,47 +901,39 @@ function initializeCRPSTrendChart() {
                 y: dayData.crpsScore,
                 score: dayData.crpsScore
             });
-            labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+        } else if (i <= 0) {
+            // Add null points for past days without data (shows gaps)
+            crpsData.push({ x: dateStr, y: null });
         }
     }
-    console.log('📈 CRPS data points collected:', crpsData.length);
 
-    // Color code the points and segments
+    // Color code points
     const pointColors = crpsData.map(d => {
+        if (!d.y) return '#666';
         if (d.score >= 80) return '#22c55e';
-        else if (d.score >= 60) return '#3b82f6';
-        else if (d.score >= 50) return '#fbbf24';
-        else if (d.score >= 40) return '#f97316';
-        else return '#ef4444';
+        if (d.score >= 60) return '#3b82f6';
+        if (d.score >= 50) return '#fbbf24';
+        if (d.score >= 40) return '#f97316';
+        return '#ef4444';
     });
 
     // Destroy existing chart if it exists
-    if (window.crpsTrendChart && typeof window.crpsTrendChart.destroy === 'function') {
-        window.crpsTrendChart.destroy();
-    }
+    if (window.crpsTrendChart) window.crpsTrendChart.destroy();
 
-    console.log('✅ CRPS Trend Chart created successfully');
-    // Create new chart
     window.crpsTrendChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: labels.length > 0 ? labels : ['No data yet'],
             datasets: [{
-                label: 'Recovery Probability Score',
-                data: crpsData.length > 0 ? crpsData.map(d => d.y) : [0],
-                backgroundColor: pointColors.length > 0 ? pointColors : ['rgba(96, 165, 250, 0.2)'],
-                borderColor: pointColors.length > 0 ? pointColors : ['rgba(96, 165, 250, 1)'],
-                borderWidth: 3,
-                pointRadius: 6,
+                label: 'CRPS Score',
+                data: crpsData,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59,130,246,0.1)',
+                pointBackgroundColor: pointColors,
+                pointRadius: 5,
                 pointHoverRadius: 8,
-                pointBackgroundColor: pointColors.length > 0 ? pointColors : ['rgba(96, 165, 250, 1)'],
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
+                borderWidth: 3,
                 tension: 0.4,
-                fill: {
-                    target: 'origin',
-                    above: 'rgba(96, 165, 250, 0.1)'
-                }
+                fill: true
             }]
         },
         options: {
@@ -967,41 +1003,15 @@ function initializeCRPSTrendChart() {
                 y: {
                     beginAtZero: true,
                     max: 100,
-                    ticks: {
-                        color: '#9ca3af',
-                        font: { size: 11 },
-                        callback: function(value) {
-                            return value + '/100';
-                        }
-                    },
-                    grid: {
-                        color: 'rgba(156, 163, 175, 0.1)',
-                        drawBorder: false
-                    },
-                    title: {
-                        display: true,
-                        text: 'Recovery Probability Score',
-                        color: '#60a5fa',
-                        font: { size: 13, weight: 'bold' }
-                    }
+                    title: { display: true, text: 'CRPS Score' }
                 },
                 x: {
-                    ticks: {
-                        color: '#9ca3af',
-                        font: { size: 10 },
-                        maxRotation: 45,
-                        minRotation: 45
+                    type: 'time',
+                    time: {
+                        unit: 'day',
+                        displayFormats: { day: 'MMM d' }
                     },
-                    grid: {
-                        color: 'rgba(156, 163, 175, 0.05)',
-                        drawBorder: false
-                    },
-                    title: {
-                        display: true,
-                        text: 'Date',
-                        color: '#60a5fa',
-                        font: { size: 13, weight: 'bold' }
-                    }
+                    title: { display: true, text: 'Date' }
                 }
             },
             interaction: {
@@ -1510,17 +1520,12 @@ function calcAverage(metric) {
 
 // UPDATE DASHBOARD STATS
 // Helper function to apply color coding for out-of-range values
+// ENHANCED COLOR CODING WITH STATUS BADGES
 function applyRangeColorCoding(metric, value, elementId, avgValue = null) {
     const element = document.getElementById(elementId);
-    const avgElement = avgValue !== null ? document.getElementById(elementId + 'Avg') : null;
-
     if (!element) return;
 
-    // Remove existing range classes
-    element.classList.remove('slightly-out-of-range', 'way-out-of-range');
-    if (avgElement) avgElement.classList.remove('slightly-out-of-range', 'way-out-of-range');
-
-    // Define normal ranges (slightly out = yellow, way out = red)
+    // Define normal ranges
     const ranges = {
         restingHR: { optimal: [60, 100], slightlyOut: [50, 110], wayOut: [40, 120] },
         bpSystolic: { optimal: [90, 120], slightlyOut: [85, 140], wayOut: [70, 160] },
@@ -1534,33 +1539,81 @@ function applyRangeColorCoding(metric, value, elementId, avgValue = null) {
     };
 
     if (!ranges[metric]) return;
-
     const range = ranges[metric];
 
-    // Check if value is out of range
+    // ✅ DETERMINE STATUS
+    let status = 'optimal';
+    let statusColor = '#22c55e'; // Green
+    let statusIcon = '✓';
+    let statusText = 'NORMAL';
+
     if (value < range.wayOut[0] || value > range.wayOut[1]) {
-        element.classList.add('way-out-of-range');
+        status = 'critical';
+        statusColor = '#ef4444'; // Red
+        statusIcon = '⚠';
+        statusText = 'CRITICAL';
     } else if (value < range.slightlyOut[0] || value > range.slightlyOut[1]) {
-        element.classList.add('slightly-out-of-range');
+        status = 'warning';
+        statusColor = '#f59e0b'; // Orange
+        statusIcon = '⚡';
+        statusText = 'CAUTION';
     }
 
-    // Apply same logic to average if provided
-    if (avgElement && avgValue !== null) {
-        if (avgValue < range.wayOut[0] || avgValue > range.wayOut[1]) {
-            avgElement.classList.add('way-out-of-range');
-        } else if (avgValue < range.slightlyOut[0] || avgValue > range.slightlyOut[1]) {
-            avgElement.classList.add('slightly-out-of-range');
+    // ✅ APPLY BACKGROUND GLOW instead of text color (more visible)
+    element.style.textShadow = `0 0 20px ${statusColor}, 0 0 40px ${statusColor}`;
+    element.style.color = status === 'optimal' ? '#ffffff' : statusColor;
+
+    // ✅ ADD STATUS BADGE below the metric (create if doesn't exist)
+    const cardElement = element.closest('.stat-card');
+    if (cardElement) {
+        let badge = cardElement.querySelector('.status-badge');
+        if (!badge) {
+            badge = document.createElement('div');
+            badge.className = 'status-badge';
+            badge.style.cssText = `
+                margin-top: 12px;
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-size: 0.75rem;
+                font-weight: 700;
+                display: inline-block;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            `;
+            cardElement.appendChild(badge);
         }
+        badge.textContent = `${statusIcon} ${statusText}`;
+        badge.style.background = statusColor;
+        badge.style.color = status === 'warning' ? '#000' : '#fff';
+        badge.style.boxShadow = `0 0 15px ${statusColor}`;
     }
+}
+
+// ✅ GET MOST RECENT DATA ENTRY (ignores selected date)
+function getMostRecentData() {
+    const dates = Object.keys(allData).sort();
+    if (dates.length === 0) return null;
+
+    // Filter out any future dates that shouldn't exist
+    const today = new Date().toISOString().split('T')[0];
+    const validDates = dates.filter(d => d <= today);
+
+    if (validDates.length === 0) return null;
+
+    return {
+        data: allData[validDates[validDates.length - 1]],
+        date: validDates[validDates.length - 1]
+    };
 }
 
 function updateDashboard() {
     try {
-        const dates = Object.keys(allData).sort();
-        if (dates.length === 0) return;
+        // ✅ ALWAYS USE THE MOST RECENT DATA, NOT THE SELECTED DATE
+        const recent = getMostRecentData();
+        if (!recent) return;
 
-        const latest = allData[dates[dates.length - 1]];
-        const latestDate = new Date(dates[dates.length - 1]).toLocaleDateString();
+        const latest = recent.data;
+        const latestDate = new Date(recent.date).toLocaleDateString();
 
         // VO2 Max
         if (latest.vo2Max) {
@@ -4474,11 +4527,47 @@ function calculateAge() {
 }
 
 // NOTIFICATIONS
-function showNotification(message, type) {
-    const notif = document.getElementById('notification');
-    notif.textContent = message;
-    notif.className = `notification ${type} show`;
-    setTimeout(() => notif.classList.remove('show'), 3000);
+// ENHANCED NOTIFICATION FUNCTION (MORE OBVIOUS)
+function showNotification(message, type = 'success') {
+    // Remove existing notifications
+    const existing = document.querySelectorAll('.save-notification');
+    existing.forEach(n => n.remove());
+
+    // Create notification banner
+    const notification = document.createElement('div');
+    notification.className = 'save-notification';
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 1.5rem;">${type === 'success' ? '✅' : '⚠️'}</span>
+            <span style="font-weight: 600;">${message}</span>
+        </div>
+    `;
+
+    // Style based on type
+    const bgColor = type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#f59e0b';
+    notification.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: ${bgColor};
+        color: #fff;
+        padding: 20px 30px;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        z-index: 10000;
+        font-size: 1.1rem;
+        animation: slideInUp 0.3s ease-out;
+        min-width: 300px;
+        border: 2px solid rgba(255,255,255,0.3);
+    `;
+
+    document.body.appendChild(notification);
+
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOutDown 0.3s ease-in';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
 }
 
 // ============================================================================
