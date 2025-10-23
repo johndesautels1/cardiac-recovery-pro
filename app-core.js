@@ -5966,9 +5966,11 @@ let capturedLocation = null;
 
 async function captureLocation() {
     const gpsButton = document.getElementById('gpsButton');
-    const locationDisplay = document.getElementById('locationDisplay');
-    const locationLabel = document.getElementById('locationLabel');
-    const locationMapLink = document.getElementById('locationMapLink');
+    const locationDisplay = document.getElementById('locationDisplay2');
+    const locationLabel = document.getElementById('locationLabel2');
+    const locationMapLink = document.getElementById('locationMapLink2');
+    const mapContainer = document.getElementById('mapContainer');
+    const embeddedMap = document.getElementById('embeddedMap');
     
     // Show loading state
     gpsButton.disabled = true;
@@ -5985,6 +5987,14 @@ if (locationData && locationData.coords) {
     locationDisplay.style.display = 'block';
     locationLabel.textContent = locationData.label;
     locationMapLink.href = locationData.googleMapsUrl;
+    
+    // Show and populate embedded map
+    if (mapContainer && embeddedMap) {
+        const lat = locationData.coords.latitude;
+        const lng = locationData.coords.longitude;
+        embeddedMap.src = `https://maps.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
+        mapContainer.style.display = 'block';
+    }
     
     // Update button to success state
     gpsButton.innerHTML = '✅ Location Captured';
@@ -6018,12 +6028,27 @@ if (capturedLocation) {
 function clearLocation() {
     capturedLocation = null;
     
-    const locationDisplay = document.getElementById('locationDisplay');
+    const locationDisplay = document.getElementById('locationDisplay2');
+    const mapContainer = document.getElementById('mapContainer');
+    const embeddedMap = document.getElementById('embeddedMap');
     const gpsButton = document.getElementById('gpsButton');
     
-    locationDisplay.style.display = 'none';
-    gpsButton.innerHTML = '📍 GET LOCATION';
-    gpsButton.style.background = 'linear-gradient(135deg, var(--cyan), var(--accent))';
+    if (locationDisplay) {
+        locationDisplay.style.display = 'none';
+    }
+    
+    if (mapContainer) {
+        mapContainer.style.display = 'none';
+    }
+    
+    if (embeddedMap) {
+        embeddedMap.src = '';
+    }
+    
+    if (gpsButton) {
+        gpsButton.innerHTML = '📍 GET LOCATION';
+        gpsButton.style.background = 'linear-gradient(135deg, var(--cyan), var(--accent))';
+    }
     
     showNotification('Location cleared', 'success');
 }
