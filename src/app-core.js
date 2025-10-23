@@ -5879,54 +5879,178 @@ console.log('✅ Keyboard shortcuts initialized (Ctrl+Shift+S to save)');
 
 let capturedLocation = null;
 
+// Helper function to wait for a global function to become available
+async function waitForGlobalFunction(functionName, maxAttempts = 4, delayMs = 400) {
+    console.log(`⏳ Waiting for ${functionName} to be available...`);
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        if (typeof window[functionName] === 'function') {
+            console.log(`✅ ${functionName} is available (attempt ${attempt}/${maxAttempts})`);
+            return true;
+        }
+        console.log(`⏳ ${functionName} not ready yet (attempt ${attempt}/${maxAttempts}), waiting ${delayMs}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+    console.warn(`⚠️ ${functionName} did not become available after ${maxAttempts} attempts`);
+    return false;
+}
+
 async function captureLocation() {
     const gpsButton = document.getElementById('gpsButton');
     const locationDisplay = document.getElementById('locationDisplay');
     const locationLabel = document.getElementById('locationLabel');
     const locationMapLink = document.getElementById('locationMapLink');
     
-    // Show loading state
-    gpsButton.disabled = true;
-    gpsButton.innerHTML = '📍 Getting Location...';
-    
-    try {
-// Use the GPS tracker module
-const locationData = await window.getLocationLabel();
-
-if (locationData && locationData.coords) {
-    capturedLocation = locationData;
-    
-    // Update display
-    locationDisplay.style.display = 'block';
-    locationLabel.textContent = locationData.label;
-    locationMapLink.href = locationData.googleMapsUrl;
-    
-    // Update button to success state
-    gpsButton.innerHTML = '✅ Location Captured';
-    gpsButton.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
-    
-    showNotification('📍 Location captured successfully!', 'success');
-    console.log('📍 Location captured:', locationData);
-} else {
-    throw new Error('Location data not available');
-}
-    } catch (error) {
-console.error('GPS error:', error);
-showNotification('⚠️ Could not get location: ' + error.message, 'error');
-
-// Reset button
-gpsButton.innerHTML = '📍 GET LOCATION';
-gpsButton.disabled = false;
+    // Defensive check: ensure DOM elements exist
+    if (!gpsButton) {
+        console.error('❌ GPS button element not found in DOM');
+        return;
     }
     
-    // Re-enable button after 2 seconds
+    console.log('📍 captureLocation() called');
+    
+    // Show loading state
+    try {
+        gpsButton.disabled = true;
+        gpsButton.innerHTML = '📍 Getting Location...';
+    } catch (error) {
+        console.error('❌ Error updating button state:', error);
+    }
+    
+    let locationData = null;
+    
+    try {
+        // Wait for GPS tracker module to be available
+        const moduleAvailable = await waitForGlobalFunction('getLocationLabel', 4, 400);
+        
+        if (moduleAvailable) {
+            console.log('📍 Using GPS tracker module (window.getLocationLabel)');
+            try {
+                locationData = await window.getLocationLabel();
+                console.log('📍 GPS tracker module returned:', locationData);
+            } catch (moduleError) {
+                console.warn('⚠️ GPS tracker module failed:', moduleError);
+                locationData = null;
+            }
+        } else {
+            console.log('⚠️ GPS tracker module not available, will use fallback');
+        }
+        
+        // If module didn't work or returned invalid data, fall back to navigator.geolocation
+        if (!locationData || !locationData.coords) {
+            console.log('📍 Falling back to navigator.geolocation.getCurrentPosition');
+            
+            if (!navigator.geolocation) {
+                throw new Error('Geolocation is not supported by this browser');
+            }
+            
+            // Use navigator.geolocation as fallback
+            const position = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(
+                    resolve,
+                    reject,
+                    {
+                        enableHighAccuracy: false,
+                        timeout: 10000,
+                        maximumAge: 300000
+                    }
+                );
+            });
+            
+            // Build a compatible location object
+            const coords = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                accuracy: position.coords.accuracy,
+                timestamp: new Date().toISOString()
+            };
+            
+            const label = `${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)}`;
+            const googleMapsUrl = `https://www.google.com/maps?q=${coords.latitude},${coords.longitude}`;
+            
+            locationData = {
+                coords: coords,
+                label: label,
+                type: 'outdoor',
+                googleMapsUrl: googleMapsUrl
+            };
+            
+            console.log('📍 Fallback geolocation successful:', locationData);
+        }
+        
+        // Validate we have location data
+        if (locationData && locationData.coords) {
+            capturedLocation = locationData;
+            
+            // Update display with defensive checks
+            try {
+                if (locationDisplay) {
+                    locationDisplay.style.display = 'block';
+                }
+                if (locationLabel) {
+                    locationLabel.textContent = locationData.label;
+                }
+                if (locationMapLink) {
+                    locationMapLink.href = locationData.googleMapsUrl;
+                }
+            } catch (displayError) {
+                console.error('❌ Error updating location display:', displayError);
+            }
+            
+            // Update button to success state
+            try {
+                if (gpsButton) {
+                    gpsButton.innerHTML = '✅ Location Captured';
+                    gpsButton.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+                }
+            } catch (buttonError) {
+                console.error('❌ Error updating button state:', buttonError);
+            }
+            
+            showNotification('📍 Location captured successfully!', 'success');
+            console.log('✅ Location captured successfully:', locationData);
+        } else {
+            throw new Error('Location data not available');
+        }
+        
+    } catch (error) {
+        console.error('❌ GPS error:', error);
+        
+        let errorMessage = error.message;
+        if (error.code === 1) {
+            errorMessage = 'Location permission denied. Please enable location access in your browser settings.';
+        } else if (error.code === 2) {
+            errorMessage = 'Location unavailable. Please check your device location settings.';
+        } else if (error.code === 3) {
+            errorMessage = 'Location request timed out. Please try again.';
+        }
+        
+        showNotification(`⚠️ Could not get location: ${errorMessage}`, 'error');
+        
+        // Reset button
+        try {
+            if (gpsButton) {
+                gpsButton.innerHTML = '📍 GET LOCATION';
+                gpsButton.disabled = false;
+            }
+        } catch (resetError) {
+            console.error('❌ Error resetting button:', resetError);
+        }
+    }
+    
+    // Re-enable button after 2 seconds (for success case)
     setTimeout(() => {
-gpsButton.disabled = false;
-if (capturedLocation) {
-    gpsButton.innerHTML = '📍 UPDATE LOCATION';
-} else {
-    gpsButton.innerHTML = '📍 GET LOCATION';
-}
+        try {
+            if (gpsButton) {
+                gpsButton.disabled = false;
+                if (capturedLocation) {
+                    gpsButton.innerHTML = '📍 UPDATE LOCATION';
+                } else {
+                    gpsButton.innerHTML = '📍 GET LOCATION';
+                }
+            }
+        } catch (timeoutError) {
+            console.error('❌ Error in setTimeout button update:', timeoutError);
+        }
     }, 2000);
 }
 
