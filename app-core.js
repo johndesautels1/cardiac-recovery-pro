@@ -5,6 +5,14 @@ let patientName = null; // Can be populated from master app data when unified
 let currentDate = new Date();
 let storageAvailable = true;
 
+// Helper: Get local YYYY-MM-DD format without timezone conversion
+function getLocalDateString(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 // Safely load data from localStorage
 try {
     const storedData = localStorage.getItem('cardiacRecoveryData');
@@ -33,7 +41,7 @@ function init() {
     // ✅ SET CALENDAR MAX TO TODAY (prevents future date selection)
     const datePickerInput = document.getElementById('datePicker');
     if (datePickerInput) {
-        datePickerInput.max = today.toISOString().split('T')[0];
+        datePickerInput.max = getLocalDateString(today);
     }
 
     updateDateDisplay();
@@ -58,7 +66,7 @@ function init() {
     initializeBottomNav(); // Initialize mobile bottom navigation
 
     // ✅ FORCE DATE PICKER TO SHOW TODAY
-    document.getElementById('datePicker').value = currentDate.toISOString().split('T')[0];
+    document.getElementById('datePicker').value = getLocalDateString(currentDate);
 
     console.log('✅ App initialized - Date set to TODAY:', today.toLocaleDateString());
 }
@@ -93,7 +101,7 @@ function navigateDate(days) {
 }
 
 function updateDateDisplay() {
-    const dateStr = currentDate.toISOString().split('T')[0];
+    const dateStr = getLocalDateString(currentDate);
     document.getElementById('currentDate').textContent =
         currentDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     document.getElementById('entryDate').textContent = dateStr;
@@ -110,7 +118,7 @@ document.getElementById('datePicker').addEventListener('change', function(e) {
     // Double-check: prevent future dates
     if (selectedDate > today) {
         showNotification('⚠️ Cannot select future dates', 'error');
-        this.value = today.toISOString().split('T')[0];
+        this.value = getLocalDateString(today);
         currentDate = today;
     } else {
         currentDate = selectedDate;
@@ -429,7 +437,7 @@ function updateRecoveryInfo() {
     if (!surgeryDateStr) return;
 
     const surgeryDate = new Date(surgeryDateStr + 'T00:00:00');
-    const today = new Date(currentDate.toISOString().split('T')[0] + 'T00:00:00');
+    const today = new Date(getLocalDateString(currentDate) + 'T00:00:00');
     const daysDiff = Math.floor((today - surgeryDate) / (1000 * 60 * 60 * 24));
     const weeksDiff = Math.floor(daysDiff / 7);
 
@@ -892,7 +900,7 @@ function initializeCRPSTrendChart() {
     for (let i = -75; i <= 15; i++) {
         const date = new Date(today);
         date.setDate(date.getDate() + i);
-        const dateStr = date.toISOString().split('T')[0];
+        const dateStr = getLocalDateString(date);
 
         const dayData = allData[dateStr];
         if (dayData && dayData.crpsScore !== undefined) {
@@ -1334,7 +1342,7 @@ function toggleHistoricalMode() {
         // Set default historical date to 6 months ago
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-        document.getElementById('historicalDate').value = sixMonthsAgo.toISOString().split('T')[0];
+        document.getElementById('historicalDate').value = getLocalDateString(sixMonthsAgo);
         updateHistoricalDate();
     } else {
         picker.style.display = 'none';
@@ -1356,8 +1364,8 @@ function saveMetrics() {
     // Use historical date if in historical mode, otherwise use current date
     console.log("💾 saveMetrics called");
     const dateStr = isHistoricalMode && historicalDate
-        ? historicalDate.toISOString().split('T')[0]
-        : currentDate.toISOString().split('T')[0];
+        ? getLocalDateString(historicalDate)
+        : getLocalDateString(currentDate);
 
     const metrics = {};
     let hasErrors = false;
@@ -1595,7 +1603,7 @@ function getMostRecentData() {
     if (dates.length === 0) return null;
 
     // Filter out any future dates that shouldn't exist
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateString(new Date());
     const validDates = dates.filter(d => d <= today);
 
     if (validDates.length === 0) return null;
@@ -2105,7 +2113,7 @@ function clearForm() {
         document.getElementById('dailyNotes').value = '';
 
         // Delete saved data for current date
-        const dateStr = currentDate.toISOString().split('T')[0];
+        const dateStr = getLocalDateString(currentDate);
         delete allData[dateStr];
         localStorage.setItem('cardiacRecoveryData', JSON.stringify(allData));
 
@@ -2120,7 +2128,7 @@ function clearForm() {
 
 // CLEAR CURRENT DATE DATA ONLY
 function clearCurrentData() {
-    const dateStr = currentDate.toISOString().split('T')[0];
+    const dateStr = getLocalDateString(currentDate);
     const displayDate = currentDate.toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
@@ -3722,7 +3730,7 @@ function updateRecoveryProgressChart() {
     const allLabels = [];
     const currentDate = new Date(startDate);
     while (currentDate <= endDate) {
-        allLabels.push(new Date(currentDate).toISOString().split('T')[0]);
+        allLabels.push(getLocalDateString(new Date(currentDate)));
         currentDate.setDate(currentDate.getDate() + 7); // Weekly intervals
     }
 
@@ -3787,7 +3795,7 @@ function updateRecoveryProgressChart() {
             for (let i = 0; i <= 7; i++) {
                 const checkDate = new Date(labelDate);
                 checkDate.setDate(checkDate.getDate() - i);
-                const checkDateStr = checkDate.toISOString().split('T')[0];
+                const checkDateStr = getLocalDateString(checkDate);
                 if (dataMap[checkDateStr] !== undefined) return dataMap[checkDateStr];
             }
             return null;
@@ -4516,7 +4524,7 @@ function createHRZoneChart() {
 // Helper function to calculate age from surgery date or patient data
 function calculateAge() {
     // Try to get age from stored patient data
-    const todayData = allData[new Date().toISOString().split('T')[0]];
+    const todayData = allData[getLocalDateString(new Date())];
     if (todayData && todayData.age) {
         return parseInt(todayData.age);
     }
