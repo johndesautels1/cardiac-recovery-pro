@@ -5966,9 +5966,10 @@ let capturedLocation = null;
 
 async function captureLocation() {
     const gpsButton = document.getElementById('gpsButton');
-    const locationDisplay = document.getElementById('locationDisplay');
-    const locationLabel = document.getElementById('locationLabel');
-    const locationMapLink = document.getElementById('locationMapLink');
+    const locationDisplay = document.getElementById('locationDisplay2');
+    const locationLabel = document.getElementById('locationLabel2');
+    const locationMapLink = document.getElementById('locationMapLink2');
+    const locationMapIframe = document.getElementById('locationMapIframe');
     
     // Show loading state
     gpsButton.disabled = true;
@@ -5985,6 +5986,14 @@ if (locationData && locationData.coords) {
     locationDisplay.style.display = 'block';
     locationLabel.textContent = locationData.label;
     locationMapLink.href = locationData.googleMapsUrl;
+    
+    // Update embedded map iframe
+    if (locationMapIframe) {
+        const lat = locationData.coords.latitude;
+        const lng = locationData.coords.longitude;
+        locationMapIframe.src = `https://maps.google.com/maps?q=${lat},${lng}&output=embed`;
+        locationMapIframe.style.display = 'block';
+    }
     
     // Update button to success state
     gpsButton.innerHTML = '✅ Location Captured';
@@ -6018,10 +6027,15 @@ if (capturedLocation) {
 function clearLocation() {
     capturedLocation = null;
     
-    const locationDisplay = document.getElementById('locationDisplay');
+    const locationDisplay = document.getElementById('locationDisplay2');
+    const locationMapIframe = document.getElementById('locationMapIframe');
     const gpsButton = document.getElementById('gpsButton');
     
     locationDisplay.style.display = 'none';
+    if (locationMapIframe) {
+        locationMapIframe.style.display = 'none';
+        locationMapIframe.src = '';
+    }
     gpsButton.innerHTML = '📍 GET LOCATION';
     gpsButton.style.background = 'linear-gradient(135deg, var(--cyan), var(--accent))';
     
