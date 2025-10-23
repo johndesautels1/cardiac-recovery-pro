@@ -5966,9 +5966,11 @@ let capturedLocation = null;
 
 async function captureLocation() {
     const gpsButton = document.getElementById('gpsButton');
-    const locationDisplay = document.getElementById('locationDisplay');
-    const locationLabel = document.getElementById('locationLabel');
-    const locationMapLink = document.getElementById('locationMapLink');
+    const locationDisplay = document.getElementById('locationDisplay2');
+    const locationLabel = document.getElementById('locationLabel2');
+    const locationMapLink = document.getElementById('locationMapLink2');
+    const mapContainer = document.getElementById('mapContainer');
+    const googleMapEmbed = document.getElementById('googleMapEmbed');
     
     // Show loading state
     gpsButton.disabled = true;
@@ -5985,6 +5987,12 @@ if (locationData && locationData.coords) {
     locationDisplay.style.display = 'block';
     locationLabel.textContent = locationData.label;
     locationMapLink.href = locationData.googleMapsUrl;
+    
+    // Show embedded map
+    const lat = locationData.coords.latitude;
+    const lng = locationData.coords.longitude;
+    mapContainer.style.display = 'block';
+    googleMapEmbed.src = `https://maps.google.com/maps?q=${lat},${lng}&output=embed`;
     
     // Update button to success state
     gpsButton.innerHTML = '✅ Location Captured';
@@ -6018,10 +6026,12 @@ if (capturedLocation) {
 function clearLocation() {
     capturedLocation = null;
     
-    const locationDisplay = document.getElementById('locationDisplay');
+    const locationDisplay = document.getElementById('locationDisplay2');
+    const mapContainer = document.getElementById('mapContainer');
     const gpsButton = document.getElementById('gpsButton');
     
     locationDisplay.style.display = 'none';
+    mapContainer.style.display = 'none';
     gpsButton.innerHTML = '📍 GET LOCATION';
     gpsButton.style.background = 'linear-gradient(135deg, var(--cyan), var(--accent))';
     
