@@ -5,14 +5,14 @@ function initializeBottomNavSafe() {
   const bottomNav = document.getElementById('bottomNav');
   if (!bottomNav) return;
   const tabs = [
-    { id: 'entry', label: 'Patient' },        // Position 1 (was Data Entry)
-    { id: 'sessions', label: 'Therapy' },     // Position 2 (was Sessions)
-    { id: 'dashboard', label: 'Dashboard' },  // Position 3
-    { id: 'analytics', label: 'Analytics' },  // Position 4
-    { id: 'history', label: 'History' },      // Position 5
-    { id: 'videos', label: 'Videos' },        // Position 6
-    { id: 'hrmonitor', label: 'LIVE DATA' },  // Position 7 (was HR Monitor)
-    { id: 'education', label: 'Learn More' }  // Position 8
+    { id: 'entry', icon: '📝', label: 'Patient' },        // Position 1 (was Data Entry)
+    { id: 'sessions', icon: '⏱️', label: 'Therapy' },     // Position 2 (was Sessions)
+    { id: 'dashboard', icon: '📊', label: 'Dashboard' },  // Position 3
+    { id: 'analytics', icon: '📈', label: 'Analytics' },  // Position 4
+    { id: 'history', icon: '📜', label: 'History' },      // Position 5
+    { id: 'videos', icon: '🎥', label: 'Videos' },        // Position 6
+    { id: 'hrmonitor', icon: '❤️', label: 'LIVE DATA' },  // Position 7 (was HR Monitor)
+    { id: 'education', icon: '📚', label: 'Learn More' }  // Position 8
   ];
   let navHTML = '';
   tabs.forEach(tab => {
@@ -22,7 +22,7 @@ function initializeBottomNavSafe() {
        onclick="switchTab('${tab.id}')"
        role="button"
        tabindex="0">
-        <span class="bottom-nav-icon"></span>
+        <span class="bottom-nav-icon">${tab.icon}</span>
         <span class="bottom-nav-label">${tab.label}</span>
     </a>`;
   });
