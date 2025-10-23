@@ -4308,7 +4308,6 @@ function createMETsChart() {
     if (!canvas) return;
 
     if (window.metsChart && typeof window.metsChart.destroy === 'function') {
-    if (window.metsChart) {
         window.metsChart.destroy();
     }
 
@@ -5174,7 +5173,6 @@ function initHRChart() {
     const ctx = canvas.getContext('2d');
 
     if (hrChart && typeof hrChart.destroy === 'function') {
-    if (hrChart) {
         hrChart.destroy();
     }
 
@@ -5793,8 +5791,6 @@ window.stopHRMonitoring = stopHRMonitoring;
 window.acknowledgeAlert = acknowledgeAlert;
 window.closeAlert = closeAlert;
 window.toggleAllMetrics = toggleAllMetrics;
-}
-}
 
 // ============================================================================
 // USER PHOTO UPLOAD
